@@ -10,5 +10,5 @@ def generate_embedding():
     Returns:
     embeddings: An instance of the GoogleGenerativeAIEmbeddings class.
     """
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-2.5-flash-preview-04-17")
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
     return embeddings
