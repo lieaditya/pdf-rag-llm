@@ -1,5 +1,6 @@
+__pycache__/
 .venv/
 .env
-data/*
-chroma/*
+data/
+chroma/
 pyrightconfig.json
