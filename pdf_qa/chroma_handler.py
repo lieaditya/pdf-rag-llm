@@ -1,6 +1,6 @@
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
-from embedding import generate_embedding
+from .embedding import generate_embedding
 import hashlib
 
 DB_PATH = 'chroma/'

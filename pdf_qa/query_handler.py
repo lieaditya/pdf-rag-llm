@@ -1,7 +1,7 @@
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
-from embedding import generate_embedding
+from .embedding import generate_embedding
 
 
 DB_PATH='chroma/'
@@ -35,6 +35,9 @@ def process_query(query: str):
     )
 
     results = db.similarity_search_with_score(query, k=5)
+    if len(results) == 0 or results[0][1] < 0.7:
+        print("Unable to find matching results.")
+        return
 
     context_str = '\n\n---\n\n'.join([doc.page_content for doc, _ in results])
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
