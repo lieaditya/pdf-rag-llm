@@ -35,7 +35,7 @@ def process_query(query: str):
     )
 
     results = db.similarity_search_with_score(query, k=5)
-    if len(results) == 0 or results[0][1] < 0.7:
+    if len(results) == 0 or results[0][1] < 0.4:
         print("Unable to find matching results.")
         return
 

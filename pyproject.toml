@@ -1,0 +1,6 @@
+[project]
+name = "pdf_qa"
+version = "0.1.0"
+
+[tool.setuptools]
+packages = ["pdf_qa"]
