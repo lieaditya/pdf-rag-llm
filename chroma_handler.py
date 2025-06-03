@@ -20,12 +20,13 @@ def add_to_chroma(chunks: list[Document]):
     db = Chroma(
         collection_name='chunks',
         embedding_function=embeddings,
-        persist_directory='DB_PATH'
+        persist_directory=DB_PATH
     )
 
     new_chunks = []
     chunks_with_ids = add_id_metadata_to_chunks(chunks)
-    existing_ids = set(db.get(include=['ids']))
+    existing_chunks = db.get(include=[])
+    existing_ids = set(existing_chunks['ids'])
     for chunk in chunks_with_ids:
         if chunk.metadata['id'] not in existing_ids:
             new_chunks.append(chunk)

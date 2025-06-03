@@ -37,14 +37,14 @@ def process_query(query: str):
     results = db.similarity_search_with_score(query, k=5)
 
     context_str = '\n\n---\n\n'.join([doc.page_content for doc, _ in results])
-    prompt_template = ChatPromptTemplate(PROMPT_TEMPLATE)
+    prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_str, question=query)
 
     llm = GoogleGenerativeAI(model="models/gemini-2.5-flash-preview-04-17")
     response_str = llm.invoke(prompt)
     sources = [doc.metadata.get('id', None) for doc, _ in results]
 
-    response = f'Response: {response_str}\nSources: {sources}'
+    response = f'Response: {response_str}\n---\nSources: {sources}'
     print(response)
 
     return response
