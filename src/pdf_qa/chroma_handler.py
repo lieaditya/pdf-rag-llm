@@ -2,8 +2,10 @@ from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from .embedding import generate_embedding
 import hashlib
+import os
+import shutil
 
-DB_PATH = 'chroma/'
+DB_PATH = 'src/data/chroma'
 
 
 def add_to_chroma(chunks: list[Document]):
@@ -94,4 +96,12 @@ def generate_content_hash(chunk: Document) -> str:
     """
     chunk_content = chunk.page_content
     return hashlib.sha256(chunk_content.encode('utf-8')).hexdigest()
+
+
+def clear_database():
+    """
+    Remove the entire database.
+    """
+    if os.path.exists(DB_PATH):
+        shutil.rmtree(DB_PATH)
 

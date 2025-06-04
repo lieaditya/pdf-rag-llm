@@ -5,7 +5,6 @@ from langchain_google_genai import GoogleGenerativeAI
 import os
 import pytest
 from fpdf import FPDF
-import re
 
 EVAL_PROMPT = """
 Expected Response: {expected_response}
