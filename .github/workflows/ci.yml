@@ -21,11 +21,11 @@ jobs:
 
       - name: Install dependencies
         env:
-          GITHUB_TOKEN: $({ secrets.GH_TOKEN )}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com".insteadOf "https://github.com"
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -v -r requirements.txt
 
       - name: Run tests
         run: pytest
