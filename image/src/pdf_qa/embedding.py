@@ -1,4 +1,11 @@
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv(override=False)
+google_api_key = os.getenv("GOOGLE_API_KEY")
+
 
 def generate_embedding():
     """
@@ -10,5 +17,8 @@ def generate_embedding():
     Returns:
     embeddings: An instance of the GoogleGenerativeAIEmbeddings class.
     """
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/text-embedding-004",
+        google_api_key=google_api_key
+    )
     return embeddings

@@ -4,7 +4,11 @@ from langchain_google_genai import GoogleGenerativeAI
 from .chroma_handler import get_chroma_db
 from dataclasses import dataclass
 from typing import List
+from dotenv import load_dotenv
+import os
 
+load_dotenv(override=False)
+google_api_key = os.getenv("GOOGLE_API_KEY")
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
@@ -45,7 +49,10 @@ def process_query(query: str):
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_str, question=query)
 
-    llm = GoogleGenerativeAI(model="models/gemini-2.5-flash-preview-04-17")
+    llm = GoogleGenerativeAI(
+        model="models/gemini-2.5-flash-preview-04-17",
+        google_api_key=google_api_key
+    )
     response_str = llm.invoke(prompt)
     sources = [doc.metadata.get('id', None) for doc, _ in results]
 
