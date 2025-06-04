@@ -6,7 +6,7 @@ version = "0.1.0"
 # packages = ["pdf_qa"]
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = {"" = "image/src"}
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["image/src"]

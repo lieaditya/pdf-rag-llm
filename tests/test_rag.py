@@ -16,7 +16,7 @@ Actual Response: {actual_response}
 @pytest.fixture(scope="session", autouse=True)
 def temp_pdf_file():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DATA_DIR = os.path.join(BASE_DIR, "..", "data")
+    DATA_DIR = os.path.join(BASE_DIR, "..", "image", "src", "data", "source")
     os.makedirs(DATA_DIR, exist_ok=True)
 
     math_filepath = os.path.join(DATA_DIR, "fake_math.pdf")

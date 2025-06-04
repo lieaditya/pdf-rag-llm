@@ -4,7 +4,7 @@ from langchain_google_genai import GoogleGenerativeAI
 from .embedding import generate_embedding
 
 
-DB_PATH='chroma/'
+DB_PATH='src/data/chroma/'
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:

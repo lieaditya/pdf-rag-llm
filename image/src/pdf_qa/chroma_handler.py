@@ -4,6 +4,7 @@ from .embedding import generate_embedding
 import hashlib
 import os
 import shutil
+from pathlib import Path
 
 DB_PATH = 'src/data/chroma'
 
