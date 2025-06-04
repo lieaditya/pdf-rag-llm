@@ -4,9 +4,30 @@ from .embedding import generate_embedding
 import hashlib
 import os
 import shutil
-from pathlib import Path
 
 DB_PATH = 'src/data/chroma'
+CHROMA_DB_INSTANCE = None
+
+
+def get_chroma_db():
+    """
+    Returns a singleton instance of the Chroma vector database.
+
+    Returns:
+    Chroma: The initialized instance of the Chroma vector store.
+    """
+    global CHROMA_DB_INSTANCE
+
+    embeddings = generate_embedding()
+    if not CHROMA_DB_INSTANCE:
+        CHROMA_DB_INSTANCE = Chroma(
+            collection_name='chunks',
+            embedding_function=embeddings,
+            persist_directory=DB_PATH
+        )
+        print(f"Init ChromaDB {CHROMA_DB_INSTANCE} from {DB_PATH}")
+
+    return CHROMA_DB_INSTANCE
 
 
 def add_to_chroma(chunks: list[Document]):
@@ -19,13 +40,7 @@ def add_to_chroma(chunks: list[Document]):
     Returns:
     None: This function modifies the Chroma database in-place. It does not return any values.
     """
-    embeddings = generate_embedding()
-    db = Chroma(
-        collection_name='chunks',
-        embedding_function=embeddings,
-        persist_directory=DB_PATH
-    )
-
+    db = get_chroma_db()
     new_chunks = []
     chunks_with_ids = add_id_metadata_to_chunks(chunks)
     existing_chunks = db.get(include=[])

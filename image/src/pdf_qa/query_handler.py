@@ -1,10 +1,10 @@
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
-from .embedding import generate_embedding
+from .chroma_handler import get_chroma_db
+from dataclasses import dataclass
+from typing import List
 
-
-DB_PATH='src/data/chroma/'
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
@@ -17,6 +17,13 @@ Answer the question based on the above context: {question}
 """
 
 
+@dataclass
+class QueryResponse:
+    query_text: str
+    response_text: str
+    sources: List[str]
+
+
 def process_query(query: str):
     """
     Processes a query using RAG with Gemini and ChromaDB.
@@ -25,14 +32,9 @@ def process_query(query: str):
     query (str): The question you want to ask.
 
     Returns:
-    str: The answer to your question based on the documents stored in the database as well as the sources to those answers. 
+    QueryResponse: QueryResponse object containing the query, response, and its sources.
     """
-    embeddings = generate_embedding()
-    db = Chroma(
-        collection_name='chunks',
-        embedding_function=embeddings,
-        persist_directory=DB_PATH
-    )
+    db = get_chroma_db()
 
     results = db.similarity_search_with_score(query, k=5)
     if len(results) == 0 or results[0][1] < 0.4:
@@ -50,4 +52,8 @@ def process_query(query: str):
     response = f'Response: {response_str}\n---\nSources: {sources}'
     print(response)
 
-    return response
+    return QueryResponse(
+        query_text=query,
+        response_text=response_str,
+        sources=sources
+    )
