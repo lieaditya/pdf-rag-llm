@@ -65,7 +65,8 @@ def validate_query(question: str, expected_response: str):
     documents = load_documents()
     chunks = split_documents(documents)
     add_to_chroma(chunks)
-    response_text = process_query(question)
+    response = process_query(question)
+    response_text = response.response_text
     # get only the answer without any template string
     only_response = response_text.split('\n---')[0].replace('Response: ', '').strip()
     prompt = EVAL_PROMPT.format(
