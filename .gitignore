@@ -1,8 +1,18 @@
+# python-related
 __pycache__/
-*.py[cod]
 *.egg-info/
-.venv/
-.env
-data/
-chroma/
+
+# config files
 pyrightconfig.json
+
+# virtual environemtns
+.venv/
+
+# environment variables
+.env
+
+# data
+image/src/data/source/**
+image/src/data/chroma/**
+!image/src/data/source/.gitkeep
+!image/src/data/chroma/.gitkeep
