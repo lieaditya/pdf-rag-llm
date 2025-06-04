@@ -5,6 +5,7 @@ from langchain_google_genai import GoogleGenerativeAI
 import os
 import pytest
 from fpdf import FPDF
+import re
 
 EVAL_PROMPT = """
 Expected Response: {expected_response}
@@ -66,9 +67,11 @@ def validate_query(question: str, expected_response: str):
     chunks = split_documents(documents)
     add_to_chroma(chunks)
     response_text = process_query(question)
+    # get only the answer without any template string
+    only_response = response_text.split('\n---')[0].replace('Response: ', '').strip()
     prompt = EVAL_PROMPT.format(
         expected_response=expected_response,
-        actual_response=response_text
+        actual_response=only_response
     )
 
     llm = GoogleGenerativeAI(model="models/gemini-2.5-flash-preview-04-17")
