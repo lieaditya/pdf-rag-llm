@@ -5,8 +5,9 @@ import hashlib
 import os
 import shutil
 
-DB_PATH = 'src/data/chroma'
 CHROMA_DB_INSTANCE = None
+IS_USING_IMAGE_RUNTIME = bool(os.environ.get("IS_USING_IMAGE_RUNTIME", False))
+DB_PATH = "data/chroma" if IS_USING_IMAGE_RUNTIME else os.environ.get("DB_PATH", "data/chroma")
 
 
 def get_chroma_db():
@@ -18,16 +19,56 @@ def get_chroma_db():
     """
     global CHROMA_DB_INSTANCE
 
-    embeddings = generate_embedding()
     if not CHROMA_DB_INSTANCE:
+        if IS_USING_IMAGE_RUNTIME:
+            copy_chroma_to_tmp()
+
+        embeddings = generate_embedding()
+        runtime_chroma_path = get_runtime_chroma_path()
         CHROMA_DB_INSTANCE = Chroma(
             collection_name='chunks',
             embedding_function=embeddings,
-            persist_directory=DB_PATH
+            persist_directory=runtime_chroma_path
         )
-        print(f"Init ChromaDB {CHROMA_DB_INSTANCE} from {DB_PATH}")
+        print(f"Init ChromaDB {CHROMA_DB_INSTANCE} from {runtime_chroma_path}")
 
     return CHROMA_DB_INSTANCE
+
+
+def copy_chroma_to_tmp():
+    """
+    Copies the ChromaDB directory to /tmp.
+
+    Note:
+    Useful for AWS Lambda since /tmp is the only directory which allows write access on AWS Lambda.
+    """
+    dst_path = get_runtime_chroma_path()
+
+    if not os.path.exists(dst_path):
+        os.makedirs(dst_path)
+
+    tmp_contents = os.listdir(dst_path)
+
+    # Copy only once each 15-minute timeout for Lambda
+    if len(tmp_contents) == 0:
+        print(f"Copying ChromaDB from {DB_PATH} to {dst_path}")
+        os.makedirs(dst_path, exist_ok=True)
+        shutil.copytree(DB_PATH, dst_path, dirs_exist_ok=True)
+    else:
+        print(f"ChromaDB already exists in {dst_path}")
+
+
+def get_runtime_chroma_path():
+    """
+    Get the ChromaDB path depending on runtime.
+
+    Returns:
+    str: The ChromaDB path.
+    """
+    if IS_USING_IMAGE_RUNTIME:
+        return f"/tmp/{DB_PATH}"
+    else:
+        return DB_PATH
 
 
 def add_to_chroma(chunks: list[Document]):
