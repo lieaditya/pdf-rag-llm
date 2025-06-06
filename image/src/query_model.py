@@ -1,0 +1,65 @@
+import os
+import time
+# from datetime import datetime, timezone
+import uuid
+import boto3
+from pydantic import BaseModel, Field
+from typing import List, Optional, Type
+from botocore.exceptions import ClientError
+from dotenv import load_dotenv
+
+load_dotenv()
+TABLE_NAME = os.environ.get("TABLE_NAME")
+
+
+class QueryModel(BaseModel):
+    query_id: str = Field(default_factory=lambda: uuid.uuid4().hex)
+    created_at: int = Field(default_factory=lambda: int(time.time()))
+    # created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    query_text: str
+    answer_text: Optional[str] = None
+    sources: List[str] = Field(default_factory=list)
+    is_complete: bool = False
+
+
+    @classmethod
+    def get_table(cls: Type["QueryModel"]):
+        dynamodb = boto3.resource("dynamodb")
+        if not TABLE_NAME:
+            raise ValueError("TABLE_NAME must be set")
+        return dynamodb.Table(TABLE_NAME)
+
+
+    def put_item(self):
+        item = self.as_ddb_item()
+        try:
+            response = QueryModel.get_table().put_item(Item=item)
+            print(response)
+        except ClientError as e:
+            # print("ClientError", e.response["Error"]["Message"])
+            error = e.response.get("Error", {})
+            message = error.get("Message", "Unknown error")
+            print("ClientError:", message)
+            raise e
+
+
+    def as_ddb_item(self):
+        item = {k: v for k, v in self.model_dump().items() if v is not None}
+        return item
+
+
+    @classmethod
+    def get_item(cls: Type["QueryModel"], query_id: str) -> "QueryModel | None":
+        try:
+            response = cls.get_table().get_item(Key={"query_id": query_id})
+        except ClientError as e:
+            error = e.response.get("Error", {})
+            message = error.get("Message", "Unknown error")
+            print("ClientError:", message)
+            return None
+
+        if "Item" in response:
+            item = response["Item"]
+            return cls(**item)
+        else:
+            return None

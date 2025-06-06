@@ -1,10 +1,8 @@
-from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
 from .chroma_handler import get_chroma_db
 from dataclasses import dataclass
 from typing import List
-from dotenv import load_dotenv
 from utils.api_key_loader import get_google_api_key
 
 

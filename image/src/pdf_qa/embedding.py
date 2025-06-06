@@ -1,5 +1,4 @@
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from dotenv import load_dotenv
 from utils.api_key_loader import get_google_api_key
 
 
