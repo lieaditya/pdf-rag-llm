@@ -5,10 +5,8 @@ from .chroma_handler import get_chroma_db
 from dataclasses import dataclass
 from typing import List
 from dotenv import load_dotenv
-import os
+from utils.api_key_loader import get_google_api_key
 
-load_dotenv(override=False)
-google_api_key = os.getenv("GOOGLE_API_KEY")
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
@@ -51,7 +49,7 @@ def process_query(query: str):
 
     llm = GoogleGenerativeAI(
         model="models/gemini-2.5-flash-preview-04-17",
-        google_api_key=google_api_key
+        google_api_key=get_google_api_key()
     )
     response_str = llm.invoke(prompt)
     sources = [doc.metadata.get('id', None) for doc, _ in results]

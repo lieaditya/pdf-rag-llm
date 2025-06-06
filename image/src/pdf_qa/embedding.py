@@ -1,10 +1,6 @@
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from dotenv import load_dotenv
-import os
-
-
-load_dotenv(override=False)
-google_api_key = os.getenv("GOOGLE_API_KEY")
+from utils.api_key_loader import get_google_api_key
 
 
 def generate_embedding():
@@ -19,6 +15,6 @@ def generate_embedding():
     """
     embeddings = GoogleGenerativeAIEmbeddings(
         model="models/text-embedding-004",
-        google_api_key=google_api_key
+        google_api_key=get_google_api_key()
     )
     return embeddings

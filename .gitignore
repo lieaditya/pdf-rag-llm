@@ -1,6 +1,7 @@
 # python-related
 __pycache__/
 *.egg-info/
+.pytest_cache/
 
 # config files
 pyrightconfig.json
