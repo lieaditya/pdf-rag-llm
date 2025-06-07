@@ -1,9 +1,14 @@
 import uvicorn
+import os
+import json
+import boto3
 from fastapi import FastAPI
 from mangum import Mangum
 from pydantic import BaseModel
-from pdf_qa.query_handler import process_query, QueryResponse
+from pdf_qa.query_handler import process_query
 from query_model import QueryModel
+
+WORKER_LAMBDA_NAME = os.environ.get("WORKER_LAMBDA_NAME", None)
 
 app = FastAPI()
 handler = Mangum(app)
@@ -14,7 +19,7 @@ class SubmitQueryRequest(BaseModel):
 
 @app.get("/")
 def index():
-    return {"Hello": "World"}
+    return {"message": "Use /query to submit or fetch queries."}
 
 
 @app.get("/query")
@@ -25,15 +30,34 @@ def get_query_by_id(query_id: str) -> QueryModel:
 
 @app.post("/query")
 def submit_query(request: SubmitQueryRequest) -> QueryModel:
-    query_response = process_query(request.query_text)
     new_query = QueryModel(
         query_text=request.query_text,
-        answer_text=query_response.response_text,
-        sources=query_response.sources,
-        is_complete=True,
     )
-    new_query.put_item()
+
+    if WORKER_LAMBDA_NAME:
+        new_query.put_item()
+        invoke_worker(new_query)
+    else:
+        query_response = process_query(request.query_text)
+        new_query.answer_text = query_response.response_text
+        new_query.sources = query_response.sources
+        new_query.is_complete = True
+        new_query.put_item()
+
     return new_query
+
+
+def invoke_worker(query: QueryModel):
+    lambda_client = boto3.client("lambda")
+    payload = query.model_dump()
+    
+    response = lambda_client.invoke(
+        FunctionName=WORKER_LAMBDA_NAME,
+        InvocationType="Event",
+        Payload=json.dumps(payload)
+    )
+
+    print(f"Worker lambda invoked {response}")
 
 
 # ===== FOR LOCAL TESTING =====

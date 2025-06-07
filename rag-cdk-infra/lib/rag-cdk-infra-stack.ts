@@ -15,7 +15,20 @@ export class RagCdkInfraStack extends cdk.Stack {
 			billingMode: BillingMode.PAY_PER_REQUEST,
 		});
 
-		// Create Lambda function using Docker
+		// Create Lambda function to handle the worker logic using Docker
+		const workerImageCode = DockerImageCode.fromImageAsset("../image", {
+			cmd: ["worker_handler.handler"]
+		});
+		const workerFunction = new DockerImageFunction(this, 'WorkerFunction', {
+			code: workerImageCode,
+			memorySize: 512, 
+			timeout: cdk.Duration.seconds(60),
+			environment: {
+				TABLE_NAME: ragQueryTable.tableName,
+			},
+		});
+
+		// Lambda function to handle the API requests
 		const apiImageCode = DockerImageCode.fromImageAsset("../image", {
 			cmd: ["api_handler.handler"]
 		});
@@ -25,8 +38,10 @@ export class RagCdkInfraStack extends cdk.Stack {
 			timeout: cdk.Duration.seconds(30),
 			environment: {
 				TABLE_NAME: ragQueryTable.tableName,
+				WORKER_LAMBDA_NAME: workerFunction.functionName,
 			},
 		});
+
 
 		// Setup environment to be able to use GOOGLE_API_KEY
 		const apiKeyParam = StringParameter.fromSecureStringParameterAttributes(this, 'GoogleApiKeyParam', {
@@ -35,8 +50,10 @@ export class RagCdkInfraStack extends cdk.Stack {
 		apiFunction.addEnvironment('GOOGLE_API_KEY_PARAM', '/myapp/google_api_key');
 
 		// Grant permissions
+		ragQueryTable.grantReadWriteData(workerFunction);
 		ragQueryTable.grantReadWriteData(apiFunction);
-		apiKeyParam.grantRead(apiFunction);
+		apiKeyParam.grantRead(workerFunction);
+		workerFunction.grantInvoke(apiFunction);
 
 		// Set HTTPS Url
 		const functionUrl = apiFunction.addFunctionUrl({
