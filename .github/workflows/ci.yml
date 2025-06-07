@@ -31,12 +31,13 @@ jobs:
         run: |
           cd image/src
           nohup uvicorn api_handler:app --host 0.0.0.0 --port 8000 > server.log 2>&1 &
+          sleep 5
           cd ../..
 
       - name: Run tests
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-        run: pytest
+        run: pytest || (cat image/src/server.log && false)
 
   deploy:
     needs: test
