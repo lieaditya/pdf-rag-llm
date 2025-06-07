@@ -2,13 +2,14 @@ import uvicorn
 import os
 import json
 import boto3
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from mangum import Mangum
 from pydantic import BaseModel
 from pdf_qa.query_handler import process_query
 from query_model import QueryModel
 
 WORKER_LAMBDA_NAME = os.environ.get("WORKER_LAMBDA_NAME", None)
+CHAR_LIMIT = 2000
 
 app = FastAPI()
 handler = Mangum(app)
@@ -25,11 +26,16 @@ def index():
 @app.get("/query")
 def get_query_by_id(query_id: str) -> QueryModel:
     query = QueryModel.get_item(query_id)
-    return query
+    if query:
+        return query
+    else:
+        raise HTTPException(status_code=404, detail=f"Query {query_id} not found")
 
 
 @app.post("/query")
 def submit_query(request: SubmitQueryRequest) -> QueryModel:
+    if len(request.query_text) > CHAR_LIMIT:
+        raise HTTPException(status_code=400, detail="Query is too long")
     new_query = QueryModel(
         query_text=request.query_text,
     )
