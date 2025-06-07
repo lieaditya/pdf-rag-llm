@@ -47,7 +47,7 @@ export class RagCdkInfraStack extends cdk.Stack {
 		const apiKeyParam = StringParameter.fromSecureStringParameterAttributes(this, 'GoogleApiKeyParam', {
 			parameterName: '/myapp/google_api_key'
 		});
-		apiFunction.addEnvironment('GOOGLE_API_KEY_PARAM', '/myapp/google_api_key');
+		workerFunction.addEnvironment('GOOGLE_API_KEY_PARAM', '/myapp/google_api_key');
 
 		// Grant permissions
 		ragQueryTable.grantReadWriteData(workerFunction);
