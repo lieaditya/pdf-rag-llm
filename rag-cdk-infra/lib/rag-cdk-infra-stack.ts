@@ -16,9 +16,9 @@ export class RagCdkInfraStack extends cdk.Stack {
 			timeToLiveAttribute: "ttl",
 		});
 		ragQueryTable.addGlobalSecondaryIndex({
-			indexName: "queries_by_user_id",
+			indexName: "UserIdSortedByCreatedAt",
 			partitionKey: { name: "user_id", type: AttributeType.STRING },
-			sortKey: { name: "create_time", type: AttributeType.NUMBER },
+			sortKey: { name: "created_at", type: AttributeType.NUMBER },
 		});
 
 		// Create Lambda function to handle the worker logic using Docker

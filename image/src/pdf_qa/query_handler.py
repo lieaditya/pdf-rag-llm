@@ -37,7 +37,6 @@ def process_query(query: str):
     db = get_chroma_db()
 
     results = db.similarity_search_with_score(query, k=5)
-    print(f"{results=}")
     if len(results) == 0 or results[0][1] < 0.4:
         print("Unable to find matching results.")
         return

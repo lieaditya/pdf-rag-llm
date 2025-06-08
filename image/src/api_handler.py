@@ -62,6 +62,12 @@ def submit_query(request: SubmitQueryRequest) -> QueryModel:
 
     return new_query
 
+@app.get("/users/{user_id}/queries")
+def get_user_queries(user_id: str) -> list[QueryModel]:
+    ITEM_COUNT = 25
+    query_items = QueryModel.list_items(user_id=user_id, count=ITEM_COUNT)
+    return query_items
+
 
 def invoke_worker(query: QueryModel):
     lambda_client = boto3.client("lambda")

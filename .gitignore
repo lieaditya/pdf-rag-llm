@@ -12,6 +12,9 @@ pyrightconfig.json
 # environment variables
 .env
 
+# testing
+server.log
+
 # data
 # image/src/data/source/**
 # image/src/data/chroma/**

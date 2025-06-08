@@ -20,7 +20,6 @@ def get_chroma_db():
     """
     global CHROMA_DB_INSTANCE
 
-    print(f"Path file in chroma db: {str(Path(__file__))}")
     if not CHROMA_DB_INSTANCE:
         if IS_USING_IMAGE_RUNTIME:
             copy_chroma_to_tmp()
