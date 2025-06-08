@@ -10,12 +10,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 TABLE_NAME = os.environ.get("TABLE_NAME")
+TTL_EXPIRE_MONTHS = 6
+TTL_EXPIRE_TIMESTAMP = 60 * 60 * 24 * 30 * TTL_EXPIRE_MONTHS
 
 
 class QueryModel(BaseModel):
     query_id: str = Field(default_factory=lambda: uuid.uuid4().hex)
+    user_id: str = "nobody"
     created_at: int = Field(default_factory=lambda: int(time.time()))
     # created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    ttl: int = Field(default_factory=lambda: int(time.time() + TTL_EXPIRE_TIMESTAMP))
     query_text: str
     answer_text: Optional[str] = None
     sources: List[str] = Field(default_factory=list)

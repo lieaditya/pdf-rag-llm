@@ -13,6 +13,12 @@ export class RagCdkInfraStack extends cdk.Stack {
 		const ragQueryTable = new Table(this, "RagQueryTable", {
 			partitionKey: { name: "query_id", type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
+			timeToLiveAttribute: "ttl",
+		});
+		ragQueryTable.addGlobalSecondaryIndex({
+			indexName: "queries_by_user_id",
+			partitionKey: { name: "user_id", type: AttributeType.STRING },
+			sortKey: { name: "create_time", type: AttributeType.NUMBER },
 		});
 
 		// Create Lambda function to handle the worker logic using Docker

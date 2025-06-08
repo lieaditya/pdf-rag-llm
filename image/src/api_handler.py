@@ -7,6 +7,7 @@ from mangum import Mangum
 from pydantic import BaseModel
 from pdf_qa.query_handler import process_query
 from query_model import QueryModel
+from typing import Optional
 
 WORKER_LAMBDA_NAME = os.environ.get("WORKER_LAMBDA_NAME", None)
 CHAR_LIMIT = 2000
@@ -14,8 +15,10 @@ CHAR_LIMIT = 2000
 app = FastAPI()
 handler = Mangum(app)
 
+
 class SubmitQueryRequest(BaseModel):
     query_text: str
+    user_id: Optional[str] = None
 
 
 @app.get("/")
@@ -36,8 +39,11 @@ def get_query_by_id(query_id: str) -> QueryModel:
 def submit_query(request: SubmitQueryRequest) -> QueryModel:
     if len(request.query_text) > CHAR_LIMIT:
         raise HTTPException(status_code=400, detail="Query is too long")
+
+    user_id = request.user_id if request.user_id else "nobody"
     new_query = QueryModel(
         query_text=request.query_text,
+        user_id=user_id,
     )
 
     if WORKER_LAMBDA_NAME:
@@ -45,10 +51,14 @@ def submit_query(request: SubmitQueryRequest) -> QueryModel:
         invoke_worker(new_query)
     else:
         query_response = process_query(request.query_text)
-        new_query.answer_text = query_response.response_text
-        new_query.sources = query_response.sources
-        new_query.is_complete = True
-        new_query.put_item()
+        if not query_response:
+            new_query.answer_text = "No matching results."
+            new_query.is_complete = True
+        else:
+            new_query.answer_text = query_response.response_text
+            new_query.sources = query_response.sources
+            new_query.is_complete = True
+            new_query.put_item()
 
     return new_query
 
