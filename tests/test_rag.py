@@ -15,17 +15,18 @@ Actual Response: {actual_response}
 """
 
 
-@pytest.fixture(scope="session", autouse=True)
-def set_correct_paths():
-    original_dir = os.getcwd()
-    os.chdir(os.path.join(original_dir, "image"))
-    yield
-    os.chdir(original_dir)
+# @pytest.fixture(scope="session", autouse=True)
+# def set_correct_paths():
+#     original_dir = os.getcwd()
+#     os.chdir(os.path.join(original_dir, "image"))
+#     yield
+#     os.chdir(original_dir)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def temp_pdf_file():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    print(f"in tests: {BASE_DIR}")
     DATA_DIR = os.path.join(BASE_DIR, "..", "image", "src", "data", "source")
     os.makedirs(DATA_DIR, exist_ok=True)
 

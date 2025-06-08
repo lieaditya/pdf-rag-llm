@@ -25,7 +25,7 @@ jobs:
           pip install -r image/requirements.txt --use-deprecated=legacy-resolver
 
       - name: Install local package
-        run: pip install .
+        run: pip install -e .
 
       - name: Start FastAPI server in background
         env:
@@ -39,7 +39,7 @@ jobs:
       - name: Run tests
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-        run: pytest -v || (cat image/src/server.log && false)
+        run: pytest -vs || (cat image/src/server.log && false)
 
   deploy:
     needs: test
