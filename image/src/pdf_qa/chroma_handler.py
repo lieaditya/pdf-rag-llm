@@ -4,10 +4,11 @@ from .embedding import generate_embedding
 import hashlib
 import os
 import shutil
+from pathlib import Path
 
 CHROMA_DB_INSTANCE = None
 IS_USING_IMAGE_RUNTIME = bool(os.environ.get("IS_USING_IMAGE_RUNTIME", False))
-DB_PATH = "data/chroma" # if IS_USING_IMAGE_RUNTIME else os.environ.get("DB_PATH", "data/chroma")
+DB_PATH = str(Path(__file__).parent.parent / "data" / "chroma")
 
 
 def get_chroma_db():
