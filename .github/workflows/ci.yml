@@ -87,4 +87,6 @@ jobs:
         run: npm install -g aws-cdk
 
       - name: Deploy using CDK
-        run: cdk deploy --require-approval never
+        run: |
+          cd rag-cdk-infra/
+          cdk deploy --require-approval never
