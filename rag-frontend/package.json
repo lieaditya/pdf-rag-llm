@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+	"generate-api-client": "openapi-generator-cli generate -i https://udqnxtrljivqdxi6unpbipwcve0zjvxc.lambda-url.us-east-1.on.aws/openapi.json -g typescript-fetch -o src/api-client",
   },
   "dependencies": {
     "react": "^19.0.0",
