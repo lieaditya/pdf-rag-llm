@@ -3,6 +3,7 @@ import os
 import json
 import boto3
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from pydantic import BaseModel
 from pdf_qa.query_handler import process_query
@@ -13,6 +14,14 @@ WORKER_LAMBDA_NAME = os.environ.get("WORKER_LAMBDA_NAME", None)
 CHAR_LIMIT = 2000
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 handler = Mangum(app)
 
 
