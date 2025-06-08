@@ -13,7 +13,7 @@ pyrightconfig.json
 .env
 
 # data
-image/src/data/source/**
+# image/src/data/source/**
 image/src/data/chroma/**
-!image/src/data/source/.gitkeep
-!image/src/data/chroma/.gitkeep
+# !image/src/data/source/.gitkeep
+# !image/src/data/chroma/.gitkeep
