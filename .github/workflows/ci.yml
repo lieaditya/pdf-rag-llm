@@ -39,10 +39,9 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           TABLE_NAME: RagCdkInfraStack-RagQueryTableB04F0F4B-FDHYTALBMCRQ
         run: |
-          cd image/src
           nohup uvicorn api_handler:app --host 0.0.0.0 --port 8000 > server.log 2>&1 &
           sleep 5
-          cd ../..
+        working-directory: ./image/src
 
       - name: Run tests
         env:
@@ -69,17 +68,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Install Node.js (for CDK CLI)
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      - name: Install AWS CDK Prerequisite
-        run: |
-          npm install -g aws-cdk
-          npm install -g typescript
+      - name: Install AWS CDK CLI
+        run: npm install -g aws-cdk typescript
+
+      - name: Install CDK project dependencies
+        run: npm install
+        working-directory: ./rag-cdk-infra
 
       - name: Deploy using CDK
-        run: |
-          cd rag-cdk-infra/
-          cdk deploy --require-approval never
+        run: cdk deploy --require-approval never
+        working-directory: ./rag-cdk-infra
