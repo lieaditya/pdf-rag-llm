@@ -78,5 +78,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Install Node.js (for CDK CLI)
+          uses: actions/setup-node@v4
+          with:
+            node-version: '18'
+
+      - name: Install AWS CDK CLI
+          run: npm install -g aws-cdk
+
       - name: Deploy using CDK
         run: cdk deploy --require-approval never
