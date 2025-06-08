@@ -6,12 +6,22 @@ import os
 import pytest
 from fpdf import FPDF
 
+
 EVAL_PROMPT = """
 Expected Response: {expected_response}
 Actual Response: {actual_response}
 ---
 (Ansewr with 'true' or 'false') Does the actual response match the expected response? Answer with false if there is no information, i.e. no matching answer." 
 """
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_correct_paths():
+    original_dir = os.getcwd()
+    os.chdir(os.path.join(original_dir, "image"))
+    yield
+    os.chdir(original_dir)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def temp_pdf_file():
@@ -21,6 +31,7 @@ def temp_pdf_file():
 
     math_filepath = os.path.join(DATA_DIR, "fake_math.pdf")
     family_filepath = os.path.join(DATA_DIR, "fake_family.pdf")
+
 
     # FPDF requires line-height as argument and call to set_font() before writing
     pdf1 = FPDF()
