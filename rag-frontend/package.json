@@ -10,6 +10,7 @@
     "generate-api-client": "openapi-generator-cli generate -i https://udqnxtrljivqdxi6unpbipwcve0zjvxc.lambda-url.us-east-1.on.aws/openapi.json -g typescript-fetch -o src/api-client"
   },
   "dependencies": {
+    "@openapitools/openapi-generator-cli": "^2.20.2",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
