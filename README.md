@@ -24,10 +24,10 @@ API Docs: [udqnxtrljivqdxi6unpbipwcve0zjvxc.lambda-url.us-east-1.on.aws/docs](ht
 
 ## 🛠️ Local Development Setup
 ### Prerequisites
-- Python 3.10+ (for FastAPI backend)
-- Node.js 18+ (for Next.js frontend)
+- Python 3.11
+- Node.js 18
 - AWS CLI Configured
-- Docker Enginer Started
+- Docker Engine Started
 
 ### Steps
 1. **Clone the repo**:
