@@ -62,7 +62,7 @@ export default function QueryList() {
       <CardHeader>
         <CardTitle>Recent Queries</CardTitle>
         <CardDescription>
-          Here are queries you've recently submitted.
+          Here are queries you&apos;ve recently submitted.
         </CardDescription>
       </CardHeader>
       <CardContent>{queryElements}</CardContent>

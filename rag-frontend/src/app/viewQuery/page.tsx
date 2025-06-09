@@ -83,7 +83,7 @@ export default function ViewQueryPage() {
       </div>
     );
 
-    queryItem.answerText || "Query still in progress. Please wait...";
+    // queryItem.answerText || "Query still in progress. Please wait..."
 
     // Displayed Element.
     viewQueryElement = (

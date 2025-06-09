@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { getSessionId } from "@/lib/getUserId";
 import Link from "next/link";
-import { Code, FileText, Globe, Home, User, Video } from "lucide-react";
+import { Code, FileText, Globe, Home, User } from "lucide-react";
 import dynamic from "next/dynamic";
 import { getApiUrl } from "@/lib/getApiClient";
 
