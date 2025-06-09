@@ -33,7 +33,7 @@ API Docs: [udqnxtrljivqdxi6unpbipwcve0zjvxc.lambda-url.us-east-1.on.aws/docs](ht
 1. **Clone the repo**:
    ```bash
    git clone https://github.com/yourusername/pdf-rag-llm.git
-   cd pdf-rag-llm
+   cd pdf-rag-llm/
    ```
 2. **Deploy AWS Infrastructure**
    ```bash
@@ -46,6 +46,7 @@ API Docs: [udqnxtrljivqdxi6unpbipwcve0zjvxc.lambda-url.us-east-1.on.aws/docs](ht
    
    # Deploy CDK
    cd rag-cdk-infra/
+   npm install -g aws-cdk typescript
    npm install
    cdk bootstrap  # first time
    cdk deploy
@@ -63,12 +64,14 @@ API Docs: [udqnxtrljivqdxi6unpbipwcve0zjvxc.lambda-url.us-east-1.on.aws/docs](ht
    ```bash
    pip install -r requirements-dev.txt
    nohup uvicorn image.src.api_handler --host 0.0.0.0 --port 8000 > server.log 2>&1
-   pkill -f uvicorn # stop background server
+   pkill -f uvicorn # to stop background server
    ```
 6. **Run frontend locally**
    ```bash
+   # Configure frontend to connect to local backend during development
+   export NEXT_PUBLIC_API_BASE_URL="http://localhost:8000"
+   
    cd rag-frontend/
    npm install
-   export NEXT_PUBLIC_API_BASE_URL="http://localhost:8000"
    npm run dev
    ```
