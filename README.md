@@ -55,18 +55,17 @@ API Docs: [qqolevsheofuqq56sccpvtun340abhod.lambda-url.us-east-1.on.aws/docs](ht
    # After deployment, set the TABLE_NAME environment variable to your DynamoDB table name
    export TABLE_NAME="YourDeployedTableName"
    ``` 
-3. **Add PDFs to `image/src/data/source`**
-4. **Run tests**
+3. **Run tests**
    ```bash
    pytest
    ```
-5. **Run FastAPI server locally**
+4. **Run FastAPI server locally**
    ```bash
    pip install -r requirements-dev.txt
    nohup uvicorn image.src.api_handler --host 0.0.0.0 --port 8000 > server.log 2>&1
    pkill -f uvicorn # to stop background server
    ```
-6. **Run frontend locally**
+5. **Run frontend locally**
    ```bash
    # Configure frontend to connect to local backend during development
    export NEXT_PUBLIC_API_BASE_URL="http://localhost:8000"
