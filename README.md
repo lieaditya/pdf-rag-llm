@@ -59,12 +59,15 @@ API Docs: [qqolevsheofuqq56sccpvtun340abhod.lambda-url.us-east-1.on.aws/docs](ht
 3. **Run FastAPI server locally**
    ```bash
    pip install -r requirements-dev.txt
-   nohup uvicorn image.src.api_handler --host 0.0.0.0 --port 8000 > server.log 2>&1
-   # pkill -f uvicorn # later to stop background server
+   uvicorn image.src.api_handler --host 0.0.0.0 --port 8000 > server.log 2>&1
+   
+   # later to stop background server
+   # pkill -f uvicorn
    ```
 4. **Run tests**
    ```bash
-   pytest
+   # Print the content of log file in case of failure
+   pytest || (cat server.log && false)
    ```
 5. **Run frontend locally**
    ```bash
