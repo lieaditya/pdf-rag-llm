@@ -55,15 +55,16 @@ API Docs: [qqolevsheofuqq56sccpvtun340abhod.lambda-url.us-east-1.on.aws/docs](ht
    # After deployment, set the TABLE_NAME environment variable to your DynamoDB table name
    export TABLE_NAME="YourDeployedTableName"
    ``` 
-3. **Run tests**
-   ```bash
-   pytest
-   ```
-4. **Run FastAPI server locally**
+
+3. **Run FastAPI server locally**
    ```bash
    pip install -r requirements-dev.txt
    nohup uvicorn image.src.api_handler --host 0.0.0.0 --port 8000 > server.log 2>&1
-   pkill -f uvicorn # to stop background server
+   # pkill -f uvicorn # later to stop background server
+   ```
+4. **Run tests**
+   ```bash
+   pytest
    ```
 5. **Run frontend locally**
    ```bash
