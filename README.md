@@ -12,7 +12,7 @@ A serverless, AI-powered system that uses **Retrieval-Augmented Generation (RAG)
 
 ## 🌐 Live Demo  
 Web App: [pdf-rag-llm.vercel.app](https://pdf-rag-llm.vercel.app)  
-API Docs: [udqnxtrljivqdxi6unpbipwcve0zjvxc.lambda-url.us-east-1.on.aws/docs](https://udqnxtrljivqdxi6unpbipwcve0zjvxc.lambda-url.us-east-1.on.aws/docs)
+API Docs: [qqolevsheofuqq56sccpvtun340abhod.lambda-url.us-east-1.on.aws/docs](https://qqolevsheofuqq56sccpvtun340abhod.lambda-url.us-east-1.on.aws/docs)
 
 ## 🔧 Tech Stack  
 | Backend            | Frontend         | DevOps                  |  

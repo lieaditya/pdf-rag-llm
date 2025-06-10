@@ -4,6 +4,8 @@ from pdf_qa.query_handler import process_query
 from langchain_google_genai import GoogleGenerativeAI
 import os
 import pytest
+import uuid
+import shutil
 from fpdf import FPDF
 
 
@@ -22,12 +24,13 @@ Actual Response: {actual_response}
 #     yield
 #     os.chdir(original_dir)
 
+user_id = uuid.uuid4().hex
 
 @pytest.fixture(scope="session", autouse=True)
 def temp_pdf_file():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     print(f"in tests: {BASE_DIR}")
-    DATA_DIR = os.path.join(BASE_DIR, "..", "image", "src", "data", "source")
+    DATA_DIR = os.path.join(BASE_DIR, "..", "image", "src", "data", "source", user_id)
     os.makedirs(DATA_DIR, exist_ok=True)
 
     math_filepath = os.path.join(DATA_DIR, "fake_math.pdf")
@@ -49,8 +52,7 @@ def temp_pdf_file():
 
     yield
 
-    os.remove(math_filepath)
-    os.remove(family_filepath)
+    shutil.rmtree(DATA_DIR)
 
 
 def test_fake_math():
@@ -74,10 +76,10 @@ def test_negative():
 
 
 def validate_query(question: str, expected_response: str):
-    documents = load_documents()
+    documents = load_documents(user_id)
     chunks = split_documents(documents)
-    add_to_chroma(chunks)
-    response = process_query(question)
+    add_to_chroma(chunks, user_id)
+    response = process_query(question, user_id)
     response_text = response.response_text
     # get only the answer without any template string
     only_response = response_text.split('\n---')[0].replace('Response: ', '').strip()

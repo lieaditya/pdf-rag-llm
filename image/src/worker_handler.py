@@ -8,7 +8,7 @@ def handler(event, context):
 
 
 def invoke_rag(query_item: QueryModel):
-    response = process_query(query_item.query_text)
+    response = process_query(query=query_item.query_text, user_id=query_item.user_id)
     query_item.answer_text = response.response_text
     query_item.sources = response.sources
     query_item.is_complete = True

@@ -25,22 +25,23 @@ class QueryResponse:
     sources: List[str]
 
 
-def process_query(query: str, user_id: str):
+def process_query(query: str, user_id: str = "nobody") -> QueryResponse | None:
     """
     Processes a query using RAG with Gemini and ChromaDB.
 
     Paramters:
     query (str): The question you want to ask.
+    user_id (str, optional): The identifier of the user making the query. Defaults to "nobody".
 
     Returns:
-    QueryResponse: QueryResponse object containing the query, response, and its sources.
+    QueryResponse | None: QueryResponse object containing the query, response, and its sources, or None if no suitable response is available.
     """
     db = get_chroma_db(user_id)
 
     results = db.similarity_search_with_score(query, k=5)
     if len(results) == 0 or results[0][1] < 0.4:
         print("Unable to find matching results.")
-        return
+        return None
 
     context_str = '\n\n---\n\n'.join([doc.page_content for doc, _ in results])
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
@@ -67,5 +68,5 @@ def process_query(query: str, user_id: str):
     return QueryResponse(
         query_text=query,
         response_text=response_str,
-        sources=unique_sources
+        sources=list(unique_sources)
     )

@@ -10,15 +10,17 @@ DATA_DIR = str(Path(__file__).parent.parent / "data" / "source")
 
 def load_documents(user_id: str = "nobody"):
     """
-    Load documents from data/ containing PDF files.
+    Load documents from a directory containing PDF files named after the given user_id.
 
+    Parameters:
+    user_id (str): The user_id string which corresponds to the directory name. Defaults to "nobody" if not provided.
     Returns:
     list[Document]: A list of documents, each corresponding to a page from any of the PDF files in the directory
     """
-    full_path = os.path.join(DATA_DIR, user_id)
-    os.makedirs(full_path, exist_ok=True)
-    print(f"load documents: {full_path}")
-    loader = PyPDFDirectoryLoader(full_path)
+    documents_path = os.path.join(DATA_DIR, user_id)
+    os.makedirs(documents_path, exist_ok=True)
+    loader = PyPDFDirectoryLoader(documents_path)
+    print(f"Load pdf documents from {documents_path}")
     return loader.load()
 
 

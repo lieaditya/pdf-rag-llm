@@ -32,6 +32,7 @@ class QueryModel(BaseModel):
         dynamodb = boto3.resource("dynamodb")
         if not TABLE_NAME:
             raise ValueError("TABLE_NAME must be set")
+        print(f"DynamoDB table name: {TABLE_NAME}")
         return dynamodb.Table(TABLE_NAME)
 
 
@@ -54,9 +55,11 @@ class QueryModel(BaseModel):
 
 
     @classmethod
-    def get_item(cls: Type["QueryModel"], query_id: str) -> "QueryModel | None":
+    def get_item(cls: Type["QueryModel"], user_id: str, query_id: str) -> "QueryModel | None":
         try:
-            response = cls.get_table().get_item(Key={"query_id": query_id})
+            response = cls.get_table().get_item(
+                Key={"user_id": user_id, "query_id": query_id}
+            )
         except ClientError as e:
             error = e.response.get("Error", {})
             message = error.get("Message", "Unknown error")
@@ -87,8 +90,3 @@ class QueryModel(BaseModel):
         
         items = response.get("Items", [])
         return [cls(**item) for item in items] # type: ignore
-
-    @classmethod
-    def list_documents(cls: Type["QueryModel"], user_id: str):
-        pass
-

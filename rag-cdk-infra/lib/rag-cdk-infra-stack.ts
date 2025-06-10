@@ -12,6 +12,7 @@ export class RagCdkInfraStack extends cdk.Stack {
 		// Create DynamoDB table to store the query data and results
 		const ragQueryTable = new Table(this, "RagQueryTable", {
 			partitionKey: { name: "query_id", type: AttributeType.STRING },
+			sortKey: { name: "user_id", type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			timeToLiveAttribute: "ttl",
 		});

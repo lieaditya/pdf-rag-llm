@@ -14,4 +14,3 @@ ENV IS_USING_IMAGE_RUNTIME=True
 COPY src/* ${LAMBDA_TASK_ROOT}
 COPY src/pdf_qa ${LAMBDA_TASK_ROOT}/pdf_qa
 COPY src/utils ${LAMBDA_TASK_ROOT}/utils
-COPY src/data/chroma ${LAMBDA_TASK_ROOT}/data/chroma

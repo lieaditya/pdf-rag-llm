@@ -14,10 +14,13 @@ DB_PATH = None
 
 def get_chroma_db(user_id: str = "nobody"):
     """
-    Returns a singleton instance of the Chroma vector database.
+    Returns an instance of the Chroma vector database for the given user_id.
+
+    Parameters:
+    user_id (str): The user_id string which will be the directory.
 
     Returns:
-    Chroma: The initialized instance of the Chroma vector store.
+    Chroma: The instance of the Chroma vector store.
     """
     global DB_PATH
     DB_PATH = os.path.join(DB_DIR, user_id)
@@ -29,7 +32,7 @@ def get_chroma_db(user_id: str = "nobody"):
     embeddings = generate_embedding()
     runtime_chroma_path = get_runtime_chroma_path()
     os.makedirs(runtime_chroma_path, exist_ok=True)
-    print(f"{runtime_chroma_path}")
+
     # this loads existing one and doesn't create fresh db every time
     CHROMA_DB_INSTANCE = Chroma(
         collection_name='chunks',
@@ -165,6 +168,5 @@ def clear_database():
     """
     Remove the entire database.
     """
-    if os.path.exists(DB_PATH):
-        shutil.rmtree(DB_PATH)
-
+    if os.path.exists(DB_DIR):
+        shutil.rmtree(DB_DIR)

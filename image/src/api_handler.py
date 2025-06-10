@@ -2,16 +2,14 @@ import uvicorn
 import os
 import json
 import boto3
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, HTTPException, File, UploadFile, Path as ApiPath
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from pydantic import BaseModel
 from pdf_qa.query_handler import process_query
 from query_model import QueryModel
-from typing import Optional
 from pdf_qa.document_processing import load_documents, split_documents
 from pdf_qa.chroma_handler import add_to_chroma
-from fpdf import FPDF
 from pathlib import Path
 
 
@@ -32,29 +30,27 @@ handler = Mangum(app)
 
 class SubmitQueryRequest(BaseModel):
     query_text: str
-    user_id: Optional[str] = None
 
 
 @app.get("/")
 def index():
-    return {"message": "Use /query to submit or fetch queries."}
+    return {"message": "Welcome to PDF QA API. Use /query to submit or fetch queries."}
 
 
-@app.get("/query")
-def get_query_by_id(query_id: str) -> QueryModel:
-    query = QueryModel.get_item(query_id)
+@app.get("/users/{user_id}/queries/{query_id}")
+def get_query_by_id(user_id: str = ApiPath(...), query_id: str = ApiPath(...)) -> QueryModel:
+    query = QueryModel.get_item(user_id, query_id)
     if query:
         return query
     else:
-        raise HTTPException(status_code=404, detail=f"Query {query_id} not found")
+        raise HTTPException(status_code=404, detail=f"Query {query_id} with user {user_id} not found")
 
 
-@app.post("/query")
-def submit_query(request: SubmitQueryRequest, user_id: str = "nobody") -> QueryModel:
+@app.post("/users/{user_id}/queries")
+def submit_query(request: SubmitQueryRequest, user_id: str = ApiPath(...)) -> QueryModel:
     if len(request.query_text) > CHAR_LIMIT:
         raise HTTPException(status_code=400, detail="Query is too long")
 
-    user_id = request.user_id if request.user_id else "nobody"
     new_query = QueryModel(
         query_text=request.query_text,
         user_id=user_id,
@@ -72,44 +68,47 @@ def submit_query(request: SubmitQueryRequest, user_id: str = "nobody") -> QueryM
             new_query.answer_text = query_response.response_text
             new_query.sources = query_response.sources
             new_query.is_complete = True
-            new_query.put_item()
+        new_query.put_item()
 
     return new_query
 
 
 @app.get("/users/{user_id}/queries")
-def get_user_queries(user_id: str) -> list[QueryModel]:
+def get_user_queries(user_id: str = ApiPath(...)) -> list[QueryModel]:
     ITEM_COUNT = 25
     query_items = QueryModel.list_items(user_id=user_id, count=ITEM_COUNT)
     return query_items
 
 
 @app.post("/users/{user_id}/documents")
-async def upload_document(document: UploadFile = File(...), user_id: str = "nobody"):
-    print(document.filename)
-    # contents = (await document.read()).decode()
+async def upload_documents(
+    documents: list[UploadFile] = File(...),
+    user_id: str = ApiPath(...)
+):
+    # save pdfs in user_id dir
     upload_directory = str(Path(__file__).parent / "data" / "source" / f"{user_id}")
     os.makedirs(upload_directory, exist_ok=True)
-    path = os.path.join(upload_directory, f"{document.filename}")
+    saved_files = []
 
-    with open(path, 'wb') as file:
-        file.write(await document.read())
+    for document in documents:
+        path = os.path.join(upload_directory, f"{document.filename}")
+        with open(path, 'wb') as file:
+            file.write(await document.read())
+        saved_files.append(document.filename)
 
-    # pdf = FPDF()
-    # pdf.add_page()
-    # pdf.set_font("Arial", size=12)
-    # pdf.write(5, contents)
-    # pdf.output(path)
-
-    documents = load_documents(user_id)
-    chunks = split_documents(documents)
+    # load pdfs in the path and add it to chromadb
+    loaded_documents = load_documents(user_id)
+    chunks = split_documents(loaded_documents)
     add_to_chroma(chunks, user_id)
-    return {"message": "uploaded"}
+
+    return {
+        "message": "pdf document uploaded",
+        "uploaded_files": saved_files
+    }
 
 
 @app.get("/users/{user_id}/documents")
-async def get_user_documents(user_id: str):
-    # documents = QueryModel.list_documents(user_id)
+async def get_user_documents(user_id: str = ApiPath(...)) -> list[str]:
     upload_directory = str(Path(__file__).parent / "data" / "source" / f"{user_id}")
     documents = []
     for filename in os.listdir(upload_directory):
@@ -117,8 +116,6 @@ async def get_user_documents(user_id: str):
 
     return documents
         
-
-
 
 def invoke_worker(query: QueryModel):
     lambda_client = boto3.client("lambda")
