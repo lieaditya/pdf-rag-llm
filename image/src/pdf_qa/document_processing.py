@@ -2,19 +2,23 @@ from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from pathlib import Path
+import os
 
 
-DATA_PATH = str(Path(__file__).parent.parent / "data" / "source")
+DATA_DIR = str(Path(__file__).parent.parent / "data" / "source")
 
 
-def load_documents():
+def load_documents(user_id: str = "nobody"):
     """
     Load documents from data/ containing PDF files.
 
     Returns:
     list[Document]: A list of documents, each corresponding to a page from any of the PDF files in the directory
     """
-    loader = PyPDFDirectoryLoader(DATA_PATH)
+    full_path = os.path.join(DATA_DIR, user_id)
+    os.makedirs(full_path, exist_ok=True)
+    print(f"load documents: {full_path}")
+    loader = PyPDFDirectoryLoader(full_path)
     return loader.load()
 
 

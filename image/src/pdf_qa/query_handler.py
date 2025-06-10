@@ -4,6 +4,7 @@ from .chroma_handler import get_chroma_db
 from dataclasses import dataclass
 from typing import List
 from utils.api_key_loader import get_google_api_key
+import os
 
 
 PROMPT_TEMPLATE = """
@@ -24,7 +25,7 @@ class QueryResponse:
     sources: List[str]
 
 
-def process_query(query: str):
+def process_query(query: str, user_id: str):
     """
     Processes a query using RAG with Gemini and ChromaDB.
 
@@ -34,7 +35,7 @@ def process_query(query: str):
     Returns:
     QueryResponse: QueryResponse object containing the query, response, and its sources.
     """
-    db = get_chroma_db()
+    db = get_chroma_db(user_id)
 
     results = db.similarity_search_with_score(query, k=5)
     if len(results) == 0 or results[0][1] < 0.4:
@@ -50,7 +51,15 @@ def process_query(query: str):
         google_api_key=get_google_api_key()
     )
     response_str = llm.invoke(prompt)
-    sources = [doc.metadata.get('id', None) for doc, _ in results]
+    sources = [str(doc.metadata.get('id')) for doc, _ in results if 'id' in doc.metadata]
+    unique_sources = set()
+    for source in sources:
+        parts = source.split(':')
+        filename = os.path.basename(parts[0])
+        page = parts[1]
+
+        unique_sources.add(f"{filename} - page: {page}")
+
 
     response = f'Response: {response_str}\n---\nSources: {sources}'
     print(response)
@@ -58,5 +67,5 @@ def process_query(query: str):
     return QueryResponse(
         query_text=query,
         response_text=response_str,
-        sources=sources
+        sources=unique_sources
     )

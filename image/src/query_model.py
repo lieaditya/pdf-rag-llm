@@ -87,3 +87,8 @@ class QueryModel(BaseModel):
         
         items = response.get("Items", [])
         return [cls(**item) for item in items] # type: ignore
+
+    @classmethod
+    def list_documents(cls: Type["QueryModel"], user_id: str):
+        pass
+

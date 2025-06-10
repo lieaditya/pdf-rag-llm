@@ -2,13 +2,18 @@ import uvicorn
 import os
 import json
 import boto3
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from pydantic import BaseModel
 from pdf_qa.query_handler import process_query
 from query_model import QueryModel
 from typing import Optional
+from pdf_qa.document_processing import load_documents, split_documents
+from pdf_qa.chroma_handler import add_to_chroma
+from fpdf import FPDF
+from pathlib import Path
+
 
 WORKER_LAMBDA_NAME = os.environ.get("WORKER_LAMBDA_NAME", None)
 CHAR_LIMIT = 2000
@@ -45,7 +50,7 @@ def get_query_by_id(query_id: str) -> QueryModel:
 
 
 @app.post("/query")
-def submit_query(request: SubmitQueryRequest) -> QueryModel:
+def submit_query(request: SubmitQueryRequest, user_id: str = "nobody") -> QueryModel:
     if len(request.query_text) > CHAR_LIMIT:
         raise HTTPException(status_code=400, detail="Query is too long")
 
@@ -54,12 +59,12 @@ def submit_query(request: SubmitQueryRequest) -> QueryModel:
         query_text=request.query_text,
         user_id=user_id,
     )
-
+    
     if WORKER_LAMBDA_NAME:
         new_query.put_item()
         invoke_worker(new_query)
     else:
-        query_response = process_query(request.query_text)
+        query_response = process_query(query=request.query_text, user_id=user_id)
         if not query_response:
             new_query.answer_text = "No matching results."
             new_query.is_complete = True
@@ -71,11 +76,48 @@ def submit_query(request: SubmitQueryRequest) -> QueryModel:
 
     return new_query
 
+
 @app.get("/users/{user_id}/queries")
 def get_user_queries(user_id: str) -> list[QueryModel]:
     ITEM_COUNT = 25
     query_items = QueryModel.list_items(user_id=user_id, count=ITEM_COUNT)
     return query_items
+
+
+@app.post("/users/{user_id}/documents")
+async def upload_document(document: UploadFile = File(...), user_id: str = "nobody"):
+    print(document.filename)
+    # contents = (await document.read()).decode()
+    upload_directory = str(Path(__file__).parent / "data" / "source" / f"{user_id}")
+    os.makedirs(upload_directory, exist_ok=True)
+    path = os.path.join(upload_directory, f"{document.filename}")
+
+    with open(path, 'wb') as file:
+        file.write(await document.read())
+
+    # pdf = FPDF()
+    # pdf.add_page()
+    # pdf.set_font("Arial", size=12)
+    # pdf.write(5, contents)
+    # pdf.output(path)
+
+    documents = load_documents(user_id)
+    chunks = split_documents(documents)
+    add_to_chroma(chunks, user_id)
+    return {"message": "uploaded"}
+
+
+@app.get("/users/{user_id}/documents")
+async def get_user_documents(user_id: str):
+    # documents = QueryModel.list_documents(user_id)
+    upload_directory = str(Path(__file__).parent / "data" / "source" / f"{user_id}")
+    documents = []
+    for filename in os.listdir(upload_directory):
+        documents.append(filename)
+
+    return documents
+        
+
 
 
 def invoke_worker(query: QueryModel):

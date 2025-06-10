@@ -6,32 +6,37 @@ import os
 import shutil
 from pathlib import Path
 
-CHROMA_DB_INSTANCE = None
+# CHROMA_DB_INSTANCE = None
 IS_USING_IMAGE_RUNTIME = bool(os.environ.get("IS_USING_IMAGE_RUNTIME", False))
-DB_PATH = str(Path(__file__).parent.parent / "data" / "chroma")
+DB_DIR = str(Path(__file__).parent.parent / "data" / "chroma")
+DB_PATH = None
 
 
-def get_chroma_db():
+def get_chroma_db(user_id: str = "nobody"):
     """
     Returns a singleton instance of the Chroma vector database.
 
     Returns:
     Chroma: The initialized instance of the Chroma vector store.
     """
-    global CHROMA_DB_INSTANCE
+    global DB_PATH
+    DB_PATH = os.path.join(DB_DIR, user_id)
 
-    if not CHROMA_DB_INSTANCE:
-        if IS_USING_IMAGE_RUNTIME:
-            copy_chroma_to_tmp()
+    # if not CHROMA_DB_INSTANCE:
+    if IS_USING_IMAGE_RUNTIME:
+        copy_chroma_to_tmp()
 
-        embeddings = generate_embedding()
-        runtime_chroma_path = get_runtime_chroma_path()
-        CHROMA_DB_INSTANCE = Chroma(
-            collection_name='chunks',
-            embedding_function=embeddings,
-            persist_directory=runtime_chroma_path
-        )
-        print(f"Init ChromaDB {CHROMA_DB_INSTANCE} from {runtime_chroma_path}")
+    embeddings = generate_embedding()
+    runtime_chroma_path = get_runtime_chroma_path()
+    os.makedirs(runtime_chroma_path, exist_ok=True)
+    print(f"{runtime_chroma_path}")
+    # this loads existing one and doesn't create fresh db every time
+    CHROMA_DB_INSTANCE = Chroma(
+        collection_name='chunks',
+        embedding_function=embeddings,
+        persist_directory=runtime_chroma_path
+    )
+    print(f"Init ChromaDB {CHROMA_DB_INSTANCE} from {runtime_chroma_path}")
 
     return CHROMA_DB_INSTANCE
 
@@ -72,7 +77,7 @@ def get_runtime_chroma_path():
         return DB_PATH
 
 
-def add_to_chroma(chunks: list[Document]):
+def add_to_chroma(chunks: list[Document], user_id: str = "nobody"):
     """
     Adds a list of chunks to a Chroma vector store, ensure that only new chunks (i.e., chunks that don't already exist in the database) are added. Each chunk is assigned a unique `id` based on its metadata to prevent duplication in the database.
 
@@ -82,7 +87,7 @@ def add_to_chroma(chunks: list[Document]):
     Returns:
     None: This function modifies the Chroma database in-place. It does not return any values.
     """
-    db = get_chroma_db()
+    db = get_chroma_db(user_id)
     new_chunks = []
     chunks_with_ids = add_id_metadata_to_chunks(chunks)
     existing_chunks = db.get(include=[])
