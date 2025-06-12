@@ -30,11 +30,12 @@ user_id = uuid.uuid4().hex
 def temp_pdf_file():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     print(f"in tests: {BASE_DIR}")
-    DATA_DIR = os.path.join(BASE_DIR, "..", "image", "src", "data", "source", user_id)
-    os.makedirs(DATA_DIR, exist_ok=True)
+    DATA_DIR = os.path.join(BASE_DIR, "..", "image", "src", "data")
+    USER_SOURCE_DIR = os.path.join(DATA_DIR, "source", user_id)
+    os.makedirs(USER_SOURCE_DIR, exist_ok=True)
 
-    math_filepath = os.path.join(DATA_DIR, "fake_math.pdf")
-    family_filepath = os.path.join(DATA_DIR, "fake_family.pdf")
+    math_filepath = os.path.join(USER_SOURCE_DIR, "fake_math.pdf")
+    family_filepath = os.path.join(USER_SOURCE_DIR, "fake_family.pdf")
 
 
     # FPDF requires line-height as argument and call to set_font() before writing

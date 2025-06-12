@@ -39,6 +39,7 @@ def process_query(query: str, user_id: str = "nobody") -> QueryResponse | None:
     db = get_chroma_db(user_id)
 
     results = db.similarity_search_with_score(query, k=5)
+    print(f"Results = {results[:3]}")
     if len(results) == 0 or results[0][1] < 0.4:
         print("Unable to find matching results.")
         return None
@@ -52,15 +53,18 @@ def process_query(query: str, user_id: str = "nobody") -> QueryResponse | None:
         google_api_key=get_google_api_key()
     )
     response_str = llm.invoke(prompt)
-    sources = [str(doc.metadata.get('id')) for doc, _ in results if 'id' in doc.metadata]
+
+    sources = [
+        str(doc.metadata.get('id'))
+        for doc, score in results
+        if 'id' in doc.metadata and score >= 0.95
+    ]
     unique_sources = set()
     for source in sources:
         parts = source.split(':')
         filename = os.path.basename(parts[0])
         page = parts[1]
-
         unique_sources.add(f"{filename} - page: {page}")
-
 
     response = f'Response: {response_str}\n---\nSources: {sources}'
     print(response)

@@ -9,8 +9,11 @@ def handler(event, context):
 
 def invoke_rag(query_item: QueryModel):
     response = process_query(query=query_item.query_text, user_id=query_item.user_id)
-    query_item.answer_text = response.response_text
-    query_item.sources = response.sources
+    if not response:
+        query_item.answer_text = "No matching results."
+    else:
+        query_item.answer_text = response.response_text
+        query_item.sources = response.sources
     query_item.is_complete = True
     query_item.put_item()
     print(f"Item is updated: {query_item}")

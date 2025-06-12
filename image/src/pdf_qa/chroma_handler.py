@@ -1,15 +1,21 @@
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from .embedding import generate_embedding
+from pathlib import Path
 import hashlib
 import os
+import stat
 import shutil
-from pathlib import Path
+import boto3
 
-# CHROMA_DB_INSTANCE = None
+
 IS_USING_IMAGE_RUNTIME = bool(os.environ.get("IS_USING_IMAGE_RUNTIME", False))
-DB_DIR = str(Path(__file__).parent.parent / "data" / "chroma")
-DB_PATH = None
+BUCKET_NAME = os.environ.get("BUCKET_NAME")
+CHROMA_DB_PATH = os.getenv('CHROMA_DB_PATH', '/mnt/chroma')
+LOCAL_DB_DIR = Path(__file__).parent.parent / "data" / "chroma"
+
+
+s3_client = boto3.client('s3')
 
 
 def get_chroma_db(user_id: str = "nobody"):
@@ -22,62 +28,41 @@ def get_chroma_db(user_id: str = "nobody"):
     Returns:
     Chroma: The instance of the Chroma vector store.
     """
-    global DB_PATH
-    DB_PATH = os.path.join(DB_DIR, user_id)
-
-    # if not CHROMA_DB_INSTANCE:
-    if IS_USING_IMAGE_RUNTIME:
-        copy_chroma_to_tmp()
-
     embeddings = generate_embedding()
-    runtime_chroma_path = get_runtime_chroma_path()
+    runtime_chroma_path = get_runtime_chroma_path(user_id)
     os.makedirs(runtime_chroma_path, exist_ok=True)
 
+    # if 'AWS_EXECUTION_ENV' in os.environ:
+    #     sync_chroma_from_s3(user_id)
+        
     # this loads existing one and doesn't create fresh db every time
     CHROMA_DB_INSTANCE = Chroma(
         collection_name='chunks',
         embedding_function=embeddings,
-        persist_directory=runtime_chroma_path
+        persist_directory=runtime_chroma_path,
     )
-    print(f"Init ChromaDB {CHROMA_DB_INSTANCE} from {runtime_chroma_path}")
 
+    print(f"Init ChromaDB {CHROMA_DB_INSTANCE} from {runtime_chroma_path}")
     return CHROMA_DB_INSTANCE
 
 
-def copy_chroma_to_tmp():
-    """
-    Copies the ChromaDB directory to /tmp.
-
-    Note:
-    Useful for AWS Lambda since /tmp is the only directory which allows write access on AWS Lambda.
-    """
-    dst_path = get_runtime_chroma_path()
-
-    if not os.path.exists(dst_path):
-        os.makedirs(dst_path)
-
-    tmp_contents = os.listdir(dst_path)
-
-    # Copy only once each 15-minute timeout for Lambda
-    if len(tmp_contents) == 0:
-        print(f"Copying ChromaDB from {DB_PATH} to {dst_path}")
-        os.makedirs(dst_path, exist_ok=True)
-        shutil.copytree(DB_PATH, dst_path, dirs_exist_ok=True)
-    else:
-        print(f"ChromaDB already exists in {dst_path}")
-
-
-def get_runtime_chroma_path():
+def get_runtime_chroma_path(user_id: str):
     """
     Get the ChromaDB path depending on runtime.
 
     Returns:
     str: The ChromaDB path.
     """
-    if IS_USING_IMAGE_RUNTIME:
-        return f"/tmp/{DB_PATH}"
+    if 'AWS_EXECUTION_ENV' in os.environ:
+        runtime_path = os.path.join(CHROMA_DB_PATH, user_id)
     else:
-        return DB_PATH
+        if IS_USING_IMAGE_RUNTIME:
+            runtime_path = os.path.join("/tmp", "data", "chroma", user_id)
+        else:
+            DB_DIR = str(Path(__file__).parent.parent / "data" / "chroma")
+            runtime_path = os.path.join(DB_DIR, user_id)
+    print(f"Runtime path is {runtime_path}")
+    return runtime_path
 
 
 def add_to_chroma(chunks: list[Document], user_id: str = "nobody"):
@@ -104,6 +89,8 @@ def add_to_chroma(chunks: list[Document], user_id: str = "nobody"):
         print(f'Adding {new_chunks_count} new chunks to db')
         new_chunk_ids = [chunk.metadata['id'] for chunk in new_chunks]
         db.add_documents(new_chunks, ids=new_chunk_ids)
+        # if 'AWS_EXECUTION_ENV' in os.environ:
+        #     sync_chroma_to_s3(user_id)
     else:
         print('No new chunks were added')
 
@@ -168,5 +155,88 @@ def clear_database():
     """
     Remove the entire database.
     """
-    if os.path.exists(DB_DIR):
-        shutil.rmtree(DB_DIR)
+    if os.path.exists(LOCAL_DB_DIR):
+        shutil.rmtree(LOCAL_DB_DIR)
+
+
+def copy_chroma_to_tmp(user_id: str = "nobody"):
+    """
+    Copies the ChromaDB directory to /tmp.
+
+    Note:
+    Useful for AWS Lambda since /tmp is the only directory which allows write access on AWS Lambda (by default, Lambda will try to write to /var/task which is read-only). This function assumes you have copied your ChromaDB directory during building the docker image.
+    """
+    DB_PATH = os.path.join(LOCAL_DB_DIR, user_id)
+    dst_path = get_runtime_chroma_path(user_id)
+
+    if not os.path.exists(dst_path):
+        os.makedirs(dst_path)
+
+    tmp_contents = os.listdir(dst_path)
+
+    # Copy only once each 15-minute timeout for Lambda
+    if len(tmp_contents) == 0:
+        print(f"Copying ChromaDB from {DB_PATH} to {dst_path}")
+        os.makedirs(dst_path, exist_ok=True)
+        shutil.copytree(DB_PATH, dst_path, dirs_exist_ok=True)
+    else:
+        print(f"ChromaDB already exists in {dst_path}")
+
+
+def ensure_chroma_path_is_writable(path: str):
+    os.chmod(path, 0o700)
+
+    for root, dirs, files in os.walk(path):
+        for d in dirs:
+            os.chmod(os.path.join(root, d), 0o700)
+        for f in files:
+            os.chmod(os.path.join(root, f), 0o600)
+
+
+def print_permissions(path):
+    for root, dirs, files in os.walk(path):
+        root_stat = os.stat(root)
+        root_perms = stat.filemode(root_stat.st_mode)
+        print(f"\nDirectory permissions: {root_perms} {root}")
+
+        print(f"Listing permissions in: {root}")
+        for name in dirs + files:
+            full_path = os.path.join(root, name)
+            st = os.stat(full_path)
+            perms = stat.filemode(st.st_mode)
+            print(f"{perms} {full_path}")
+
+
+def sync_chroma_from_s3(user_id: str):
+    prefix = f"chroma/{user_id}/"
+    local_path = get_runtime_chroma_path(user_id)
+    print(f"Persist directory for chroma from s3 to local: {local_path}")
+    os.makedirs(local_path, exist_ok=True)
+
+    response = s3_client.list_objects_v2(
+        Bucket=BUCKET_NAME,
+        Prefix=prefix
+    )
+
+    for obj in response.get("Contents", []):
+        key = obj["Key"]
+        filename = key[len(prefix):]
+        file_path = os.path.join(local_path, filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        print(f"About to download {filename} to {file_path}")
+        s3_client.download_file(BUCKET_NAME, key, file_path)
+        print(f"Downloaded {key} to {file_path}")
+
+
+def sync_chroma_to_s3(user_id: str):
+    prefix = f"chroma/{user_id}/"
+    local_path = get_runtime_chroma_path(user_id)
+    print(f"Persist directory for chroma from local to s3: {local_path}")
+
+    for root, dirs, files in os.walk(local_path):
+        for file in files:
+            full_path = os.path.join(root, file)
+            filename = os.path.relpath(full_path, local_path)
+            key = prefix + filename
+            s3_client.upload_file(full_path, BUCKET_NAME, key)
+            print(f"Uploaded {full_path} to s3://{BUCKET_NAME}/{key}")
