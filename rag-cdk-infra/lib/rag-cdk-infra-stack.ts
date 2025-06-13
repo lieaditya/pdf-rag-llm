@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { DockerImageCode, DockerImageFunction, FunctionUrlAuthType } from 'aws-cdk-lib/aws-lambda';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import { FileSystem, PerformanceMode, ThroughputMode } from 'aws-cdk-lib/aws-efs';
@@ -38,6 +38,13 @@ export class RagCdkInfraStack extends cdk.Stack {
 		const userDocumentBucket = new Bucket(this, 'UserDocumentBucket', {
 			removalPolicy: cdk.RemovalPolicy.DESTROY,
 			autoDeleteObjects: true,
+			publicReadAccess: true,
+			blockPublicAccess: new BlockPublicAccess({
+				blockPublicAcls: false,
+				blockPublicPolicy: false,
+				ignorePublicAcls: false,
+				restrictPublicBuckets: false,
+			}),
 		});
 		
 		// Create DynamoDB table to store the query data and results
