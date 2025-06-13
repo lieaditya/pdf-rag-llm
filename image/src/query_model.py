@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Type
 from botocore.exceptions import ClientError
 from dotenv import load_dotenv
+from pdf_qa.query_handler import Source
 
 load_dotenv()
 TABLE_NAME = os.environ.get("TABLE_NAME")
@@ -23,7 +24,7 @@ class QueryModel(BaseModel):
     ttl: int = Field(default_factory=lambda: int(time.time() + TTL_EXPIRE_TIMESTAMP))
     query_text: str
     answer_text: Optional[str] = None
-    sources: List[str] = Field(default_factory=list)
+    sources: List[Source] = Field(default_factory=list)
     is_complete: bool = False
 
 

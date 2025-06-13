@@ -19,10 +19,16 @@ Answer the question based on the above context: {question}
 
 
 @dataclass
+class Source:
+    filename: str
+    page: int
+
+
+@dataclass
 class QueryResponse:
     query_text: str
     response_text: str
-    sources: List[str]
+    sources: List[Source]
 
 
 def process_query(query: str, user_id: str = "nobody") -> QueryResponse | None:
@@ -64,7 +70,7 @@ def process_query(query: str, user_id: str = "nobody") -> QueryResponse | None:
         parts = source.split(':')
         filename = os.path.basename(parts[0])
         page = parts[1]
-        unique_sources.add(f"{filename} - page: {page}")
+        unique_sources.add((filename, page))
 
     response = f'Response: {response_str}\n---\nSources: {sources}'
     print(response)

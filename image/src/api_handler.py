@@ -105,7 +105,9 @@ async def upload_user_documents(
                 s3_client.put_object(
                     Bucket=BUCKET_NAME,
                     Key=key,
-                    Body=content
+                    Body=content,
+                    ContentType='application/pdf',
+                    ContentDisposition='inline'
                 )
                 saved_files.append(document.filename)
             except ClientError as e:
