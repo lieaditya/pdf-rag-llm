@@ -72,6 +72,8 @@ def test_list_queries():
     assert len(data) == NUM_ITEMS
 
     received_query_ids = [item["query_id"] for item in data]
+    print(f"{received_query_ids=}")
+    print(f"{original_query_ids[::-1]=}")
     assert received_query_ids == original_query_ids[::-1]
 
 
