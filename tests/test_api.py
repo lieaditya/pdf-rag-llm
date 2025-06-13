@@ -4,6 +4,7 @@ import requests
 import os
 from fpdf import FPDF
 
+
 ENDPOINT = "http://localhost:8000"
 QUERY_ENDPOINT = "{}/users/{{user_id}}/queries/".format(ENDPOINT)
 DOCUMENT_ENDPOINT = "{}/users/{{user_id}}/documents/".format(ENDPOINT)
@@ -60,6 +61,7 @@ def test_list_queries():
         query_id = add_query_for_user(user_id, f"Query {i}")
         original_query_ids.append(query_id)
         print(f"{i}. {user_id=} with {query_id=}")
+        time.sleep(1) # without this, created_at might have same value
 
     response = requests.get(
         QUERY_ENDPOINT.format(user_id=user_id),
