@@ -28,16 +28,27 @@ import {
     SubmitQueryRequestToJSON,
 } from '../models/index';
 
-export interface GetQueryByIdQueryGetRequest {
-    queryId: string;
+export interface GetUserDocumentsUsersUserIdDocumentsGetRequest {
+    userId: string;
 }
 
 export interface GetUserQueriesUsersUserIdQueriesGetRequest {
     userId: string;
 }
 
-export interface SubmitQueryQueryPostRequest {
+export interface GetUserQueryByIdUsersUserIdQueriesQueryIdGetRequest {
+    userId: string;
+    queryId: string;
+}
+
+export interface SubmitUserQueryUsersUserIdQueriesPostRequest {
+    userId: string;
     submitQueryRequest: SubmitQueryRequest;
+}
+
+export interface UploadUserDocumentsUsersUserIdDocumentsPostRequest {
+    userId: string;
+    documents: Array<Blob>;
 }
 
 /**
@@ -46,39 +57,35 @@ export interface SubmitQueryQueryPostRequest {
 export class DefaultApi extends runtime.BaseAPI {
 
     /**
-     * Get Query By Id
+     * Get User Documents
      */
-    async getQueryByIdQueryGetRaw(requestParameters: GetQueryByIdQueryGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<QueryModel>> {
-        if (requestParameters['queryId'] == null) {
+    async getUserDocumentsUsersUserIdDocumentsGetRaw(requestParameters: GetUserDocumentsUsersUserIdDocumentsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<string>>> {
+        if (requestParameters['userId'] == null) {
             throw new runtime.RequiredError(
-                'queryId',
-                'Required parameter "queryId" was null or undefined when calling getQueryByIdQueryGet().'
+                'userId',
+                'Required parameter "userId" was null or undefined when calling getUserDocumentsUsersUserIdDocumentsGet().'
             );
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters['queryId'] != null) {
-            queryParameters['query_id'] = requestParameters['queryId'];
-        }
-
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/query`,
+            path: `/users/{user_id}/documents`.replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => QueryModelFromJSON(jsonValue));
+        return new runtime.JSONApiResponse<any>(response);
     }
 
     /**
-     * Get Query By Id
+     * Get User Documents
      */
-    async getQueryByIdQueryGet(requestParameters: GetQueryByIdQueryGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<QueryModel> {
-        const response = await this.getQueryByIdQueryGetRaw(requestParameters, initOverrides);
+    async getUserDocumentsUsersUserIdDocumentsGet(requestParameters: GetUserDocumentsUsersUserIdDocumentsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>> {
+        const response = await this.getUserDocumentsUsersUserIdDocumentsGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -116,6 +123,46 @@ export class DefaultApi extends runtime.BaseAPI {
     }
 
     /**
+     * Get User Query By Id
+     */
+    async getUserQueryByIdUsersUserIdQueriesQueryIdGetRaw(requestParameters: GetUserQueryByIdUsersUserIdQueriesQueryIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<QueryModel>> {
+        if (requestParameters['userId'] == null) {
+            throw new runtime.RequiredError(
+                'userId',
+                'Required parameter "userId" was null or undefined when calling getUserQueryByIdUsersUserIdQueriesQueryIdGet().'
+            );
+        }
+
+        if (requestParameters['queryId'] == null) {
+            throw new runtime.RequiredError(
+                'queryId',
+                'Required parameter "queryId" was null or undefined when calling getUserQueryByIdUsersUserIdQueriesQueryIdGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{user_id}/queries/{query_id}`.replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId']))).replace(`{${"query_id"}}`, encodeURIComponent(String(requestParameters['queryId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => QueryModelFromJSON(jsonValue));
+    }
+
+    /**
+     * Get User Query By Id
+     */
+    async getUserQueryByIdUsersUserIdQueriesQueryIdGet(requestParameters: GetUserQueryByIdUsersUserIdQueriesQueryIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<QueryModel> {
+        const response = await this.getUserQueryByIdUsersUserIdQueriesQueryIdGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Index
      */
     async indexGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
@@ -146,13 +193,20 @@ export class DefaultApi extends runtime.BaseAPI {
     }
 
     /**
-     * Submit Query
+     * Submit User Query
      */
-    async submitQueryQueryPostRaw(requestParameters: SubmitQueryQueryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<QueryModel>> {
+    async submitUserQueryUsersUserIdQueriesPostRaw(requestParameters: SubmitUserQueryUsersUserIdQueriesPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<QueryModel>> {
+        if (requestParameters['userId'] == null) {
+            throw new runtime.RequiredError(
+                'userId',
+                'Required parameter "userId" was null or undefined when calling submitUserQueryUsersUserIdQueriesPost().'
+            );
+        }
+
         if (requestParameters['submitQueryRequest'] == null) {
             throw new runtime.RequiredError(
                 'submitQueryRequest',
-                'Required parameter "submitQueryRequest" was null or undefined when calling submitQueryQueryPost().'
+                'Required parameter "submitQueryRequest" was null or undefined when calling submitUserQueryUsersUserIdQueriesPost().'
             );
         }
 
@@ -163,7 +217,7 @@ export class DefaultApi extends runtime.BaseAPI {
         headerParameters['Content-Type'] = 'application/json';
 
         const response = await this.request({
-            path: `/query`,
+            path: `/users/{user_id}/queries`.replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -174,10 +228,77 @@ export class DefaultApi extends runtime.BaseAPI {
     }
 
     /**
-     * Submit Query
+     * Submit User Query
      */
-    async submitQueryQueryPost(requestParameters: SubmitQueryQueryPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<QueryModel> {
-        const response = await this.submitQueryQueryPostRaw(requestParameters, initOverrides);
+    async submitUserQueryUsersUserIdQueriesPost(requestParameters: SubmitUserQueryUsersUserIdQueriesPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<QueryModel> {
+        const response = await this.submitUserQueryUsersUserIdQueriesPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Upload User Documents
+     */
+    async uploadUserDocumentsUsersUserIdDocumentsPostRaw(requestParameters: UploadUserDocumentsUsersUserIdDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        if (requestParameters['userId'] == null) {
+            throw new runtime.RequiredError(
+                'userId',
+                'Required parameter "userId" was null or undefined when calling uploadUserDocumentsUsersUserIdDocumentsPost().'
+            );
+        }
+
+        if (requestParameters['documents'] == null) {
+            throw new runtime.RequiredError(
+                'documents',
+                'Required parameter "documents" was null or undefined when calling uploadUserDocumentsUsersUserIdDocumentsPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['documents'] != null) {
+            requestParameters['documents'].forEach((element) => {
+                formParams.append('documents', element as any);
+            })
+        }
+
+        const response = await this.request({
+            path: `/users/{user_id}/documents`.replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters['userId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Upload User Documents
+     */
+    async uploadUserDocumentsUsersUserIdDocumentsPost(requestParameters: UploadUserDocumentsUsersUserIdDocumentsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.uploadUserDocumentsUsersUserIdDocumentsPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

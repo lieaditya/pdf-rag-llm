@@ -6,7 +6,6 @@ import { Textarea } from "../ui/textarea";
 import createApiClient from "@/lib/getApiClient";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { getSessionId } from "@/lib/getUserId";
 import {
   Card,
   CardContent,
@@ -15,12 +14,14 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
+import { SubmitUserQueryUsersUserIdQueriesPostRequest } from "@/api-client";
+import { useUser } from "@/context/UserContext";
 
 export default function SubmitQueryForm() {
   const api = createApiClient();
-  const userId = getSessionId();
+	const { userId } = useUser();
   const originalPlaceHolder: string =
-    "How to use if statement?";
+    "How to get six pack abs fast?";
 
   const [query, setQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,10 +30,13 @@ export default function SubmitQueryForm() {
   const submitForm = () => {
     const queryToSubmit = query || originalPlaceHolder;
     console.log(`Submitting query: ${queryToSubmit}`);
-    const request = { queryText: queryToSubmit, userId: userId };
-    const response = api.submitQueryQueryPost({
-      submitQueryRequest: request,
-    });
+    const request: SubmitUserQueryUsersUserIdQueriesPostRequest = {
+			userId: userId,
+			submitQueryRequest: {
+				queryText: queryToSubmit,
+			},
+		};
+    const response = api.submitUserQueryUsersUserIdQueriesPost(request);
 
     setIsSubmitting(true);
     response.then((data) => {
@@ -63,7 +67,7 @@ export default function SubmitQueryForm() {
       <CardHeader>
         <CardTitle>Submit New Query</CardTitle>
         <CardDescription>
-          Ask a question about C++.
+          Ask anything based on your uploaded PDFs.
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate-api-client": "openapi-generator-cli generate -i https://udqnxtrljivqdxi6unpbipwcve0zjvxc.lambda-url.us-east-1.on.aws/openapi.json -g typescript-fetch -o src/api-client"
+    "generate-api-client": "openapi-generator-cli generate -i https://eg26tqn7i76rxxljr2sseng4v40iexsv.lambda-url.us-east-1.on.aws/openapi.json -g typescript-fetch -o src/api-client"
   },
   "dependencies": {
     "@openapitools/openapi-generator-cli": "^2.20.2",
@@ -18,6 +18,7 @@
     "next": "15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-dropzone": "^14.3.8",
     "tailwind-merge": "^3.3.0",
     "uuid": "^11.1.0"
   },

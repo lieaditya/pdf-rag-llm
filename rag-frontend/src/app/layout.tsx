@@ -4,23 +4,26 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { getSessionId } from "@/lib/getUserId";
 import Link from "next/link";
-import { Code, FileText, Globe, Home, User } from "lucide-react";
+import { Code, Globe, Home, User } from "lucide-react";
 import dynamic from "next/dynamic";
 import { getApiUrl } from "@/lib/getApiClient";
+import Sidebar from "@/components/app/sidebar";
+import { UserProvider, useUser } from "@/context/UserContext";
 
 const inter = Inter({ subsets: ["latin"] });
+
 
 function InnerLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const userId = getSessionId();
+  const { userId } = useUser();
   const truncatedUserId = userId.slice(0, 8);
   console.log("userId", userId);
 
   return (
-    <main className="flex min-h-screen flex-col items-center px-2 lg:px-24 py-8 gap-2">
+    <main className="flex min-h-screen flex-col items-center px-2 lg:px-24 py-8 gap-2 w-full">
       <header className="w-full max-w-3xl flex justify-between items-center text-xs">
         <Link href="/">
           <div className="text-slate-600 flex">
@@ -42,12 +45,6 @@ function InnerLayout({
       <footer className="w-full max-w-3xl text-sm text-slate-400 mt-4">
         <div className="text-center space-y-2">
           <div className="flex items-center gap-2 justify-center sm:flex-row flex-col">
-            <Link href="/">
-              <div className="flex hover:underline hover:text-slate-700">
-                <FileText className="mr-1 h-4 w-4 my-auto" />
-                Source PDF
-              </div>
-            </Link>
             <Link href="https://github.com/lieaditya/pdf-rag-llm">
               <div className="flex hover:underline hover:text-slate-700">
                 <Code className="mr-1 h-4 w-4 my-auto" />
@@ -70,13 +67,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+	const userId = getSessionId();
+
   return (
     <html lang="en">
 			<title>PDF QA</title>
       <body
         className={(inter.className = " bg-slate-200")}
       >
-        <DynamicInnerLayout>{children}</DynamicInnerLayout>
+				<UserProvider userId={userId}>
+					<div className="flex">
+						<Sidebar />
+						<DynamicInnerLayout>{children}</DynamicInnerLayout>
+					</div>
+				</UserProvider>
       </body>
     </html>
   );

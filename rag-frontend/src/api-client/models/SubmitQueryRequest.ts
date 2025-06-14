@@ -25,12 +25,6 @@ export interface SubmitQueryRequest {
      * @memberof SubmitQueryRequest
      */
     queryText: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SubmitQueryRequest
-     */
-    userId?: string | null;
 }
 
 /**
@@ -52,7 +46,6 @@ export function SubmitQueryRequestFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'queryText': json['query_text'],
-        'userId': json['user_id'] == null ? undefined : json['user_id'],
     };
 }
 
@@ -68,7 +61,6 @@ export function SubmitQueryRequestToJSONTyped(value?: SubmitQueryRequest | null,
     return {
         
         'query_text': value['queryText'],
-        'user_id': value['userId'],
     };
 }
 

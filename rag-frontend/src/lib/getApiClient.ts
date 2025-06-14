@@ -3,7 +3,7 @@
 import { Configuration, DefaultApi } from "@/api-client";
 
 export function getApiUrl() {
-	return process.env.NEXT_PUBLIC_API_BASE_URL || "https://udqnxtrljivqdxi6unpbipwcve0zjvxc.lambda-url.us-east-1.on.aws";
+	return process.env.NEXT_PUBLIC_API_BASE_URL;
 }
 
 export default function createApiClient() {

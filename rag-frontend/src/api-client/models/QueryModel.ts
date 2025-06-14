@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Source } from './Source';
+import {
+    SourceFromJSON,
+    SourceFromJSONTyped,
+    SourceToJSON,
+    SourceToJSONTyped,
+} from './Source';
+
 /**
  * 
  * @export
@@ -57,10 +65,10 @@ export interface QueryModel {
     answerText?: string | null;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<Source>}
      * @memberof QueryModel
      */
-    sources?: Array<string>;
+    sources?: Array<Source>;
     /**
      * 
      * @type {boolean}
@@ -93,7 +101,7 @@ export function QueryModelFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'ttl': json['ttl'] == null ? undefined : json['ttl'],
         'queryText': json['query_text'],
         'answerText': json['answer_text'] == null ? undefined : json['answer_text'],
-        'sources': json['sources'] == null ? undefined : json['sources'],
+        'sources': json['sources'] == null ? undefined : ((json['sources'] as Array<any>).map(SourceFromJSON)),
         'isComplete': json['is_complete'] == null ? undefined : json['is_complete'],
     };
 }
@@ -115,7 +123,7 @@ export function QueryModelToJSONTyped(value?: QueryModel | null, ignoreDiscrimin
         'ttl': value['ttl'],
         'query_text': value['queryText'],
         'answer_text': value['answerText'],
-        'sources': value['sources'],
+        'sources': value['sources'] == null ? undefined : ((value['sources'] as Array<any>).map(SourceToJSON)),
         'is_complete': value['isComplete'],
     };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { QueryModel } from "@/api-client";
+import { GetUserQueryByIdUsersUserIdQueriesQueryIdGetRequest, QueryModel } from "@/api-client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUser } from "@/context/UserContext";
 import createApiClient from "@/lib/getApiClient";
 import { ArrowLeft, Link2, Loader } from "lucide-react";
 import Link from "next/link";
@@ -20,17 +21,19 @@ import { useEffect, useState } from "react";
 export default function ViewQueryPage() {
   const searchParams = useSearchParams();
   const queryId = searchParams.get("query_id");
+	const { userId } = useUser();
   const api = createApiClient();
   const [queryItem, setQueryItem] = useState<QueryModel>();
+	const bucketUrl = process.env.NEXT_PUBLIC_S3_BUCKET_URL!;
 
-  // Create a hook to call the API.
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const request = {
-          queryId: queryId!,
+        const request: GetUserQueryByIdUsersUserIdQueriesQueryIdGetRequest = {
+					userId: userId!,
+					queryId: queryId!,
         };
-        const response = api.getQueryByIdQueryGet(request);
+        const response = api.getUserQueryByIdUsersUserIdQueriesQueryIdGet(request);
         response.then((data) => {
           console.log(data);
           setQueryItem(data);
@@ -58,9 +61,12 @@ export default function ViewQueryPage() {
     if (!queryItem.sources) {
       queryItem.sources = [];
     }
-    const sourcesElement = queryItem.sources!.map((source) => {
+    const sourcesElement = queryItem.sources!.map(({ filename, page }) => {
+			const encodedFilename = encodeURIComponent(filename);
+			const fileUrl = `${bucketUrl}source/${userId}/${encodedFilename}#page=${page}`;
+			const source = `${filename} - Page: ${page}` ;
       return (
-        <Link key={source} href={`/source/${source}`}>
+        <Link key={source} href={fileUrl}>
           <div className="text-xs flex text-slate-500 hover:underline">
             <Link2 className="mr-2 h-4 w-4" />
             {source}
@@ -83,9 +89,6 @@ export default function ViewQueryPage() {
       </div>
     );
 
-    // queryItem.answerText || "Query still in progress. Please wait..."
-
-    // Displayed Element.
     viewQueryElement = (
       <>
         <div className="bg-blue-100 text-blue-800 p-3 rounded-sm">

@@ -4,7 +4,6 @@ import { QueryModel } from "@/api-client";
 import createApiClient from "@/lib/getApiClient";
 import { useEffect, useState } from "react";
 import QueryListItem from "./queryListItem";
-import { getSessionId } from "@/lib/getUserId";
 import {
   Card,
   CardContent,
@@ -13,15 +12,15 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
+import { useUser } from "@/context/UserContext";
 
 export default function QueryList() {
   const api = createApiClient();
-  const userId = getSessionId();
+  const { userId } = useUser();
 
   const [isLoading, setIsLoading] = useState(true);
   const [queryItems, setQueryItems] = useState<QueryModel[]>([]);
 
-  // Create a hook to call the API.
   useEffect(() => {
     const fetchData = async () => {
       try {
