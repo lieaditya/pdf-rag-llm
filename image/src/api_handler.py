@@ -94,6 +94,9 @@ async def upload_user_documents(
 
     if 'AWS_EXECUTION_ENV' in os.environ:
         for document in documents:
+            if not document.filename or not document.filename.lower().endswith(".pdf"):
+                raise HTTPException(status_code=400, detail=f"Only PDF files are allowed. Invalid file: {document.filename}")
+
             content = await document.read()
             if not document.filename:
                 print("Missing document filename")

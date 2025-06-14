@@ -67,7 +67,7 @@ def process_query(query: str, user_id: str = "nobody") -> QueryResponse | None:
     sources = [
         str(doc.metadata.get('id'))
         for doc, score in results
-        if 'id' in doc.metadata and score >= 0.95
+        if 'id' in doc.metadata and score >= 0.5
     ]
     unique_sources = set()
     for source in sources:

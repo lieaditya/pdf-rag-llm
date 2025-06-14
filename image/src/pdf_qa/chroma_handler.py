@@ -32,6 +32,11 @@ def get_chroma_db(user_id: str = "nobody"):
     runtime_chroma_path = get_runtime_chroma_path(user_id)
     os.makedirs(runtime_chroma_path, exist_ok=True)
 
+    for root, dirs, files in os.walk(runtime_chroma_path):
+        for file in files:
+            full_path = os.path.join(root, file)
+            print(f"file in {runtime_chroma_path}: {full_path}")
+
     # if 'AWS_EXECUTION_ENV' in os.environ:
     #     sync_chroma_from_s3(user_id)
         
