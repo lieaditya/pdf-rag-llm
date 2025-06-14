@@ -1,6 +1,6 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
-from .chroma_handler import get_chroma_db
+from .chroma_handler import get_chroma_db, get_runtime_chroma_path
 from dataclasses import dataclass
 from typing import List
 from utils.api_key_loader import get_google_api_key
@@ -18,7 +18,7 @@ Answer the question based on the above context: {question}
 """
 
 
-@dataclass
+@dataclass(frozen=True)
 class Source:
     filename: str
     page: int
@@ -42,8 +42,12 @@ def process_query(query: str, user_id: str = "nobody") -> QueryResponse | None:
     Returns:
     QueryResponse | None: QueryResponse object containing the query, response, and its sources, or None if no suitable response is available.
     """
-    db = get_chroma_db(user_id)
+    db_path = get_runtime_chroma_path(user_id)
+    if not os.path.isdir(db_path):
+        print("Please upload some PDFs first")
+        return None
 
+    db = get_chroma_db(user_id)
     results = db.similarity_search_with_score(query, k=5)
     print(f"Results = {results[:3]}")
     if len(results) == 0 or results[0][1] < 0.4:
@@ -69,8 +73,8 @@ def process_query(query: str, user_id: str = "nobody") -> QueryResponse | None:
     for source in sources:
         parts = source.split(':')
         filename = os.path.basename(parts[0])
-        page = parts[1]
-        unique_sources.add((filename, page))
+        page = int(parts[1])
+        unique_sources.add(Source(filename=filename, page=page))
 
     response = f'Response: {response_str}\n---\nSources: {sources}'
     print(response)

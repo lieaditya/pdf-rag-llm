@@ -88,6 +88,7 @@ def add_to_chroma(chunks: list[Document], user_id: str = "nobody"):
     if new_chunks_count:
         print(f'Adding {new_chunks_count} new chunks to db')
         new_chunk_ids = [chunk.metadata['id'] for chunk in new_chunks]
+        print("About to add documents to db")
         db.add_documents(new_chunks, ids=new_chunk_ids)
         # if 'AWS_EXECUTION_ENV' in os.environ:
         #     sync_chroma_to_s3(user_id)
