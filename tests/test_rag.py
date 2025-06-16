@@ -1,4 +1,4 @@
-from pdf_qa.chroma_handler import add_to_chroma
+from pdf_qa.chroma_handler import add_to_chroma, clear_database
 from pdf_qa.document_processing import load_documents, split_documents
 from pdf_qa.query_handler import process_query
 from langchain_google_genai import GoogleGenerativeAI
@@ -54,6 +54,8 @@ def temp_pdf_file():
     yield
 
     shutil.rmtree(DATA_DIR)
+    clear_database(user_id)
+
 
 
 def test_fake_math():

@@ -3,6 +3,7 @@ import uuid
 import requests
 import os
 from fpdf import FPDF
+from pdf_qa.chroma_handler import clear_database
 
 
 ENDPOINT = "http://localhost:8000"
@@ -52,6 +53,8 @@ def test_submit_then_get_query():
     assert data["answer_text"] is not None
     assert data["is_complete"]
 
+    clear_database(user_id)
+
 
 def test_list_queries():
     user_id = uuid.uuid4().hex
@@ -77,6 +80,7 @@ def test_list_queries():
     print(f"{received_query_ids=}")
     print(f"{original_query_ids[::-1]=}")
     assert received_query_ids == original_query_ids[::-1]
+    clear_database(user_id)
 
 
 # Helper function for test_list_queries()
@@ -127,3 +131,4 @@ def test_upload_then_list_documents():
     print(response.json())
     assert response.status_code == 200
     assert len(response.json()) == 2
+    clear_database(user_id)

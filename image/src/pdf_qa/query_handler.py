@@ -42,12 +42,15 @@ def process_query(query: str, user_id: str = "nobody") -> QueryResponse | None:
     Returns:
     QueryResponse | None: QueryResponse object containing the query, response, and its sources, or None if no suitable response is available.
     """
-    db_path = get_runtime_chroma_path(user_id)
-    if not os.path.isdir(db_path):
-        print("Please upload some PDFs first")
-        return None
+    # db_path = get_runtime_chroma_path(user_id)
+    # if not os.path.isdir(db_path):
+    #     print("Please upload some PDFs first")
+    #     return None
 
     db = get_chroma_db(user_id)
+    if db is None:
+        print("db not found")
+        return None
     results = db.similarity_search_with_score(query, k=5)
     print(f"Results = {results[:3]}")
     if len(results) == 0 or results[0][1] < 0.4:

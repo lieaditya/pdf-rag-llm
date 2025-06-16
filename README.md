@@ -3,16 +3,16 @@
 A serverless, AI-powered system that uses **Retrieval-Augmented Generation (RAG)** to deliver accurate, context-aware answers from your uploaded documents. 
 
 ## 🚀 Key Features  
-- **AI-Powered Q&A**: Google Gemini + LangChain for generative answers.  
+- **AI-Powered Q&A**: Google Gemini + LangChain for generative answers. 
 - **Serverless Architecture**: FastAPI + AWS for scalability.  
 - **Vector Search**: ChromaDB for efficient context-relevant chunks retrieval.  
-- **Infrastructure-as-Code**: AWS CDK deploys dockerized Lambda functions, DynamoDB (queries storage), S3 (PDFs storage), EFS (Chroma storage between Lambdas), and SSM (secrets).  
-- **Responsive UI**: Next.js + Tailwind CSS (Vercel-hosted).  
+- **Infrastructure-as-Code**: AWS CDK deploys dockerized Lambda functions, DynamoDB (queries storage), S3 (PDFs storage) and SSM (secrets).  
+- **Intuitive UI**: Next.js + Tailwind CSS (Vercel-hosted).  
 - **CI/CD Automation**: GitHub Actions for testing and deployments.  
 
 ## 🌐 Live Demo  
 Web App: [pdf-rag-llm.vercel.app](https://pdf-rag-llm.vercel.app)  
-API Docs: [eg26tqn7i76rxxljr2sseng4v40iexsv.lambda-url.us-east-1.on.aws/docs](https://eg26tqn7i76rxxljr2sseng4v40iexsv.lambda-url.us-east-1.on.aws/docs)
+API Docs: [https://cq4kcnt6ph2cpum4xtpzbxycpq0ighgw.lambda-url.us-east-1.on.aws/docs](https://cq4kcnt6ph2cpum4xtpzbxycpq0ighgw.lambda-url.us-east-1.on.aws/docs)
 
 ## 🔧 Tech Stack  
 | Backend            | Frontend         | DevOps                  |  
@@ -28,6 +28,8 @@ API Docs: [eg26tqn7i76rxxljr2sseng4v40iexsv.lambda-url.us-east-1.on.aws/docs](ht
 - Node.js 18
 - AWS CLI Configured
 - Docker Engine Started
+- Google API Key
+- Chroma API Key
 
 ### Steps
 1. **Clone the repo**:
@@ -39,7 +41,14 @@ API Docs: [eg26tqn7i76rxxljr2sseng4v40iexsv.lambda-url.us-east-1.on.aws/docs](ht
    ```bash
    # Add GOOGLE_API_KEY to AWS SSM
    aws ssm put-parameter \
-    --name "/myapp/google_api_key" \
+    --name "/rag-app/google_api_key" \
+    --value "your_actual_key_here" \
+    --type "SecureString" \
+    --overwrite
+
+   # Add CHROMA_API_KEY to AWS SSM
+   aws ssm put-parameter \
+    --name "/rag-app/chroma_api_key" \
     --value "your_actual_key_here" \
     --type "SecureString" \
     --overwrite
@@ -55,21 +64,19 @@ API Docs: [eg26tqn7i76rxxljr2sseng4v40iexsv.lambda-url.us-east-1.on.aws/docs](ht
    You will see output like:
    ```bash
    Outputs:
-   RagCdkInfraStack.ChromaFileSystemId = fs-xyz 
    RagCdkInfraStack.FunctionUrl = https://xyz.lambda-url.us-east-1.on.aws/ 
    RagCdkInfraStack.RagQueryTableName = RagCdkInfraStack-RagQueryTablexyz 
-   RagCdkInfraStack.UserDocumentBucketName = ragcdkinfrastack-userdocumentbucketxyz
    ```
 3. **Configure environment variables**
    At the root of the project, create a `.env` file and add the values from the CDK outputs:
    ```bash
    TABLE_NAME=RagCdkInfraStack-RagQueryTablexyz 
-   BUCKET_NAME=ragcdkinfrastack-userdocumentbucketxyz
+   BUCKET_NAME=your_bucket_url
    ```
    In the frontend directory `./rag-frontend`, create a `.env.local` file and add the values from the CDK outputs:
    ```bash
    NEXT_PUBLIC_API_BASE_URL=https://xyz.lambda-url.us-east-1.on.aws/ # or use your local server
-   NEXT_PUBLIC_S3_BUCKET_URL=ragcdkinfrastack-userdocumentbucketxyz
+   NEXT_PUBLIC_S3_BUCKET_URL=your_bucket_url
    ```
 4. **Run FastAPI server locally**
    ```bash

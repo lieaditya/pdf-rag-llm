@@ -1,14 +1,18 @@
+from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from .embedding import generate_embedding
 from pathlib import Path
+from utils.api_key_loader import get_chroma_api_key
 import hashlib
 import os
 import stat
 import shutil
 import boto3
+import chromadb
 
 
+load_dotenv()
 IS_USING_IMAGE_RUNTIME = bool(os.environ.get("IS_USING_IMAGE_RUNTIME", False))
 BUCKET_NAME = os.environ.get("BUCKET_NAME")
 CHROMA_DB_PATH = os.getenv('CHROMA_DB_PATH', '/mnt/chroma')
@@ -29,25 +33,40 @@ def get_chroma_db(user_id: str = "nobody"):
     Chroma: The instance of the Chroma vector store.
     """
     embeddings = generate_embedding()
-    runtime_chroma_path = get_runtime_chroma_path(user_id)
-    os.makedirs(runtime_chroma_path, exist_ok=True)
+    # runtime_chroma_path = get_runtime_chroma_path(user_id)
+    # os.makedirs(runtime_chroma_path, exist_ok=True)
 
-    for root, dirs, files in os.walk(runtime_chroma_path):
-        for file in files:
-            full_path = os.path.join(root, file)
-            print(f"file in {runtime_chroma_path}: {full_path}")
+    # for root, dirs, files in os.walk(runtime_chroma_path):
+    #     for file in files:
+    #         full_path = os.path.join(root, file)
+    #         print(f"file in {runtime_chroma_path}: {full_path}")
 
     # if 'AWS_EXECUTION_ENV' in os.environ:
     #     sync_chroma_from_s3(user_id)
         
+    chroma_api_key = get_chroma_api_key()
+    if chroma_api_key is None:
+        return None
+
+    client = chromadb.HttpClient(
+      ssl=True,
+      host='api.trychroma.com',
+      tenant='ca0acac0-5424-49ea-89d7-43d60dc3ece4',
+      database='rag-chroma',
+      headers={
+        'x-chroma-token': chroma_api_key
+      }
+    )
+  
     # this loads existing one and doesn't create fresh db every time
     CHROMA_DB_INSTANCE = Chroma(
-        collection_name='chunks',
+        collection_name=user_id,
         embedding_function=embeddings,
-        persist_directory=runtime_chroma_path,
+        client=client
+        # persist_directory=runtime_chroma_path,
     )
 
-    print(f"Init ChromaDB {CHROMA_DB_INSTANCE} from {runtime_chroma_path}")
+    print(f"Init ChromaDB {CHROMA_DB_INSTANCE}")
     return CHROMA_DB_INSTANCE
 
 
@@ -81,6 +100,9 @@ def add_to_chroma(chunks: list[Document], user_id: str = "nobody"):
     None: This function modifies the Chroma database in-place. It does not return any values.
     """
     db = get_chroma_db(user_id)
+    if db is None:
+        print("db not found")
+        return
     new_chunks = []
     chunks_with_ids = add_id_metadata_to_chunks(chunks)
     existing_chunks = db.get(include=[])
@@ -105,8 +127,8 @@ def add_id_metadata_to_chunks(chunks: list[Document]):
     """
     Adds `id` metadata to each chunk in the given list. The `id` is generated based on the `source` and `page` metadata, and a chunk index as well as a hash of the chunk's content to ensure each chunk has a unique identifier.
 
-    The `id` will be in the form `{source}:{page}:{chunk}:{content_hash}`,
-    e.g. "data/file.pdf:10:5:bf2d4f89b6727e1a9dbf8e65d20a9d08f5b7f4182839d13c6e88e79c9a2f5484"
+    The `id` will be in the form `{source}:{page}:{chunk}:{content_hash}[:8]`,
+    e.g. "data/file.pdf:10:5:bf2d4f89"
     where:
     - `source` is the document's source,
     - `page` is the page number,
@@ -125,9 +147,9 @@ def add_id_metadata_to_chunks(chunks: list[Document]):
     current_chunk_idx = 0
 
     for chunk in chunks:
-        source = chunk.metadata.get('source')
+        source = chunk.metadata.get('source', '')
         page = chunk.metadata.get('page')
-        current_source_page = f'{source}:{page}'
+        current_source_page = f'{os.path.basename(source)}:{page}'
 
         if current_source_page == prev_source_page:
             current_chunk_idx += 1
@@ -135,7 +157,7 @@ def add_id_metadata_to_chunks(chunks: list[Document]):
             current_chunk_idx = 0
         prev_source_page = current_source_page
 
-        content_hash = generate_content_hash(chunk)
+        content_hash = generate_content_hash(chunk)[:8]
         
         chunk_id = f'{current_source_page}:{current_chunk_idx}:{content_hash}'
         chunk.metadata['id'] = chunk_id
@@ -157,12 +179,27 @@ def generate_content_hash(chunk: Document) -> str:
     return hashlib.sha256(chunk_content.encode('utf-8')).hexdigest()
 
 
-def clear_database():
+def clear_database(user_id: str = "nobody"):
     """
     Remove the entire database.
     """
-    if os.path.exists(LOCAL_DB_DIR):
-        shutil.rmtree(LOCAL_DB_DIR)
+    # if os.path.exists(LOCAL_DB_DIR):
+    #     shutil.rmtree(LOCAL_DB_DIR)
+    chroma_api_key = get_chroma_api_key()
+    if chroma_api_key is None:
+        return None
+
+    client = chromadb.HttpClient(
+      ssl=True,
+      host='api.trychroma.com',
+      tenant='ca0acac0-5424-49ea-89d7-43d60dc3ece4',
+      database='rag-chroma',
+      headers={
+        'x-chroma-token': chroma_api_key
+      }
+    )
+    client.delete_collection(name=user_id)
+
 
 
 def copy_chroma_to_tmp(user_id: str = "nobody"):

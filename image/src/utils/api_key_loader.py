@@ -28,3 +28,28 @@ def get_google_api_key():
             return None
 
     return os.getenv("GOOGLE_API_KEY")
+
+
+def get_chroma_api_key():
+    """
+    Returns Google API Key depending on the os environment.
+
+    Return:
+    str: The value of Google API Key
+    """
+    print(f"Chroma API Key Param: {os.getenv('CHROMA_API_KEY_PARAM')}")
+
+    if 'AWS_EXECUTION_ENV' in os.environ:
+        try:
+            ssm = boto3.client('ssm')
+            api_key_param = os.getenv("CHROMA_API_KEY_PARAM")
+            response = ssm.get_parameter(
+                Name=api_key_param,
+                WithDecryption=True
+            )
+            return response['Parameter']['Value']
+        except ClientError as e:
+            print(f"SSM error: {e}")
+            return None
+
+    return os.getenv("CHROMA_API_KEY")
