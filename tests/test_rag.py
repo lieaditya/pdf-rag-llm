@@ -91,7 +91,7 @@ def validate_query(question: str, expected_response: str):
         actual_response=only_response
     )
 
-    llm = GoogleGenerativeAI(model="models/gemini-2.5-flash-preview-04-17")
+    llm = GoogleGenerativeAI(model="models/gemini-2.5-pro")
     evaluation_result = llm.invoke(prompt).strip().lower()
 
     print(prompt)

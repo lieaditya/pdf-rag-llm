@@ -1,6 +1,6 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
-from .chroma_handler import get_chroma_db, get_runtime_chroma_path
+from .chroma_handler import get_chroma_db
 from dataclasses import dataclass
 from typing import List
 from utils.api_key_loader import get_google_api_key
@@ -35,7 +35,7 @@ def process_query(query: str, user_id: str = "nobody") -> QueryResponse | None:
     """
     Processes a query using RAG with Gemini and ChromaDB.
 
-    Paramters:
+    Parameters:
     query (str): The question you want to ask.
     user_id (str, optional): The identifier of the user making the query. Defaults to "nobody".
 
@@ -62,7 +62,7 @@ def process_query(query: str, user_id: str = "nobody") -> QueryResponse | None:
     prompt = prompt_template.format(context=context_str, question=query)
 
     llm = GoogleGenerativeAI(
-        model="models/gemini-2.5-flash-preview-04-17",
+        model="models/gemini-2.5-pro",
         google_api_key=get_google_api_key()
     )
     response_str = llm.invoke(prompt)
