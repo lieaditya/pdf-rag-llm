@@ -1,20 +1,12 @@
-# 📄 PDF Q&A System with RAG  
+# PDF Q&A System with RAG  
 **Ask questions, get answers-directly from your PDFs.**  
 A serverless, AI-powered system that uses **Retrieval-Augmented Generation (RAG)** to deliver accurate, context-aware answers from your uploaded documents. 
 
-## 🚀 Key Features  
-- **AI-Powered Q&A**: Google Gemini + LangChain for generative answers. 
-- **Serverless Architecture**: FastAPI + AWS for scalability.  
-- **Vector Search**: ChromaDB for efficient context-relevant chunks retrieval.  
-- **Infrastructure-as-Code**: AWS CDK deploys dockerized Lambda functions, DynamoDB (queries storage), S3 (PDFs storage) and SSM (secrets).  
-- **Intuitive UI**: Next.js + Tailwind CSS (Vercel-hosted).  
-- **CI/CD Automation**: GitHub Actions for testing and deployments.  
-
-## 🌐 Live Demo  
+## Live Demo  
 Web App: [pdf-rag-llm.vercel.app](https://pdf-rag-llm.vercel.app)  
 API Docs: [https://cq4kcnt6ph2cpum4xtpzbxycpq0ighgw.lambda-url.us-east-1.on.aws/docs](https://cq4kcnt6ph2cpum4xtpzbxycpq0ighgw.lambda-url.us-east-1.on.aws/docs)
 
-## 🔧 Tech Stack  
+## Tech Stack  
 | Backend            | Frontend         | DevOps                  |  
 |--------------------|------------------|-------------------------|  
 | Python             | TypeScript       | AWS CDK                 |  
@@ -22,7 +14,7 @@ API Docs: [https://cq4kcnt6ph2cpum4xtpzbxycpq0ighgw.lambda-url.us-east-1.on.aws/
 | FastAPI            | Tailwind CSS     | GitHub Actions          |  
 | Google Gemini API  | Vercel (Hosting) | AWS Lambda/DynamoDB/SSM |  
 
-## 🛠️ Local Development Setup
+## Local Development Setup
 ### Prerequisites
 - Python 3.11
 - Node.js 18
